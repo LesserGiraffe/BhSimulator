@@ -1,0 +1,7 @@
+build
+bin
+misc
+.settings
+.vscode
+google-java-format_windows-x86-64.exe
+App/Jlib/
