@@ -33,8 +33,8 @@ import java.util.function.Supplier;
 import javax.naming.LimitExceededException;
 import net.seapanda.bunnyhop.simulator.geometry.CustomContactListener;
 import net.seapanda.bunnyhop.simulator.geometry.RayTestHelper;
+import net.seapanda.bunnyhop.simulator.obj.Box;
 import net.seapanda.bunnyhop.simulator.obj.Lamp;
-import net.seapanda.bunnyhop.simulator.obj.MovableBox;
 import net.seapanda.bunnyhop.simulator.obj.ObjectReflection;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 import net.seapanda.bunnyhop.simulator.obj.Stage;
@@ -130,14 +130,15 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
    * 引数で指定した位置に箱の 3D モデルを作成する. 
    *
    * @param pos 箱の底面の中心の位置.
+   * @param isHeavy 重い箱を作る場合 true.
    * @return 作成した箱の 3D モデル.
    * @throws MaxObjectsExceededException 既にシミュレーション空間内に作成可能な 3D モデルの最大個数に達している.
    */
-  public MovableBox createMovableBox(Vector3 pos) throws MaxObjectsExceededException {
+  public Box createBox(Vector3 pos, boolean isHeavy) throws MaxObjectsExceededException {
     if (numObjects == MAX_OBJECTS) {
       throw new MaxObjectsExceededException("No more 3D models can be added.");
     }
-    var box = new MovableBox(new Vector3(2, 2, 2), pos);
+    var box = new Box(new Vector3(2, 2, 2), pos, isHeavy);
     instances.add(box);
     box.addCollisionObjectsTo(dynamicsWorld);
     ++numObjects;
@@ -181,8 +182,7 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
       collidable.removeCollisionObjectsFrom(dynamicsWorld);
     }
     obj.dispose();
-    if (obj instanceof Lamp
-        || obj instanceof MovableBox) {
+    if (obj instanceof Lamp || obj instanceof Box) {
       --numObjects;
     }
   }

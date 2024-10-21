@@ -132,7 +132,7 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
     uiComponent = new LampCtrlView(this);
   }
 
-  /** 3次元モデルを作成する. */
+  /** 3D モデルを作成する. */
   private Scene createScene(float scale, Vector3 pos) {
     var scene = new Scene(sceneAsset.scene);
     scene.modelInstance.transform.scl(scale);

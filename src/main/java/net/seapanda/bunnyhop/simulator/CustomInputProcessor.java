@@ -30,9 +30,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import net.seapanda.bunnyhop.simulator.geometry.RayTestHelper;
 import net.seapanda.bunnyhop.simulator.geometry.RayTestHelper.RayTestResult;
+import net.seapanda.bunnyhop.simulator.obj.Box;
 import net.seapanda.bunnyhop.simulator.obj.CollisionGroup;
 import net.seapanda.bunnyhop.simulator.obj.Lamp;
-import net.seapanda.bunnyhop.simulator.obj.MovableBox;
 import net.seapanda.bunnyhop.simulator.obj.ObjectReflection;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.Collidable;
@@ -227,9 +227,9 @@ public class CustomInputProcessor extends InputAdapter implements UiViewProvider
     }
   }
 
-  private void createMovableBox() {
+  private void createBox(boolean isHeavy) {
     try {
-      MovableBox box = simObjManager.createMovableBox(cameraCtrl.target);
+      Box box = simObjManager.createBox(cameraCtrl.target, isHeavy);
       deselectAll();
       select(box);
     } catch (SimulationObjectManager.MaxObjectsExceededException e) {
@@ -248,7 +248,7 @@ public class CustomInputProcessor extends InputAdapter implements UiViewProvider
   public class AccessHelper {
 
     public Runnable fnDeleteSelectedObjects = CustomInputProcessor.this::deleteSelectedObjects;
-    public Runnable fnCreateBox = CustomInputProcessor.this::createMovableBox;
+    public Consumer<Boolean> fnCreateBox = CustomInputProcessor.this::createBox;
     public Runnable fnCreateLamp = CustomInputProcessor.this::createLamp;
     public List<Collidable> selectedModels = CustomInputProcessor.this.selectedModels;
 

@@ -104,8 +104,7 @@ public class Stage extends Collidable {
   }
 
   private btRigidBody createRigidBody(btCollisionShape shape, btMotionState motionState) {
-    var localInertia = new Vector3();
-    var rigidBody = new btRigidBody(0f, motionState, shape, localInertia);
+    var rigidBody = new btRigidBody(0f, motionState, shape, new Vector3());
     rigidBody.setCollisionFlags(
         rigidBody.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_STATIC_OBJECT);
     rigidBody.setActivationState(Collision.DISABLE_DEACTIVATION);

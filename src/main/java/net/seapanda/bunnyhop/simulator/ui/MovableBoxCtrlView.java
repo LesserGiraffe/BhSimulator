@@ -23,10 +23,10 @@ import com.kotcrab.vis.ui.widget.VisImage;
 import com.kotcrab.vis.ui.widget.VisSlider;
 import com.kotcrab.vis.ui.widget.VisTable;
 import net.seapanda.bunnyhop.simulator.BhSimulator;
-import net.seapanda.bunnyhop.simulator.obj.MovableBox;
+import net.seapanda.bunnyhop.simulator.obj.Box;
 
 /**
- * {@link MovableBox} をコントロールする UI コンポーネントを持つ View.
+ * {@link ImmovableBox} をコントロールする UI コンポーネントを持つ View.
  *
  * @author K.Koike
  */
@@ -36,14 +36,14 @@ public class MovableBoxCtrlView extends VisTable {
 
   /** コンストラクタ.
    *
-   * @param model このコントロールビューで操作する {@link MovableBox} オブジェクト.
+   * @param model このコントロールビューで操作する {@link ImmovableBox} オブジェクト.
    */
-  public MovableBoxCtrlView(MovableBox model) {
+  public MovableBoxCtrlView(Box model) {
     addRotationSlider(model);
   }
 
   /** Yaw 軸周りに回転させるスライダを追加する. */
-  private void addRotationSlider(MovableBox model) {
+  private void addRotationSlider(Box model) {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/rotation.png";
     var size = new Vector2(16f * UiUtil.mm, 8.47f * UiUtil.mm);
     this.<VisImage>add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.mm);

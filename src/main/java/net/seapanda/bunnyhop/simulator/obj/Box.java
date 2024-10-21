@@ -16,18 +16,11 @@
 
 package net.seapanda.bunnyhop.simulator.obj;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Attribute;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
@@ -42,6 +35,11 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.kotcrab.vis.ui.widget.VisTable;
+import net.mgsx.gltf.loaders.glb.GLBLoader;
+import net.mgsx.gltf.scene3d.scene.Scene;
+import net.mgsx.gltf.scene3d.scene.SceneAsset;
+import net.mgsx.gltf.scene3d.utils.MaterialConverter;
+import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.ObjectReflectionProvider;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.PhysicalEntity;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
@@ -53,10 +51,10 @@ import org.apache.commons.lang3.mutable.MutableInt;
  *
  * @author K.Koike
  */
-public class MovableBox
+public class Box
     extends PhysicalEntity implements ObjectReflectionProvider, UiViewProvider {
   
-  private final ModelInstance modelInstance;
+  private Scene scene;
   private final btRigidBody body;
   /** この 3D モデルのリソースを共有する {@link ObjectReflection} オブジェクトの個数. */
   private final MutableInt numShared = new MutableInt(0);
@@ -74,43 +72,43 @@ public class MovableBox
    *
    * @param size 直方体のサイズ
    * @param pos 直方体の底面の中心点の位置
+   * @param isHeavy true の場合, 他のオブジェクトとの衝突などで動きにくくなる.
    */
-  public MovableBox(Vector3 size, Vector3 pos) {
+  public Box(Vector3 size, Vector3 pos, boolean isHeavy) {
     this.size = size;
-    Model model = createModel(size);
-    modelInstance = new ModelInstance(model);
-    modelInstance.transform.translate(pos.x, pos.y + size.y * 0.5f, pos.z);
-    var motionState = new CustomMotionState(modelInstance.transform);
+    scene = createScene(size, pos, isHeavy);
+    var motionState = new CustomMotionState(scene.modelInstance.transform);
     btCollisionShape shape = new btBoxShape(new Vector3(size).scl(0.5f));
-    body = createRigidBody(shape, motionState);
+    body = createRigidBody(shape, motionState, isHeavy);
     uiComponent = new MovableBoxCtrlView(this);
   }
 
-  
-  private Model createModel(Vector3 size) {
-    ModelBuilder builder = new ModelBuilder();
-    builder.begin();
-    builder.node();
-    MeshPartBuilder mpb = builder.part(
-        "box",
-        GL20.GL_TRIANGLES,
-        Usage.Position | Usage.Normal,
-        new Material(ColorAttribute.createDiffuse(new Color(Color.BLUE).mul(0.5f))));
-    BoxShapeBuilder.build(mpb, size.x, size.y, size.z);
-    return builder.end();
+  /** 3D モデルを作成する. */
+  private Scene createScene(Vector3 size, Vector3 pos, boolean isHeavy) {
+    var modelName = isHeavy ? "/Models/HeavyBox.glb" : "/Models/Dice.glb";
+    SceneAsset sceneAsset = new GLBLoader().load(
+        Gdx.files.absolute(BhSimulator.ASSET_PATH + modelName));
+    var scene = new Scene(sceneAsset.scene);
+    scene.modelInstance.transform.scale(size.x, size.y, size.z);
+    scene.modelInstance.transform.setTranslation(new Vector3(pos).add(0, size.y * 0.5f, 0));
+    MaterialConverter.makeCompatible(scene);
+    return scene;
   }
 
 
-  private btRigidBody createRigidBody(btCollisionShape shape, btMotionState motionState) {
+  private btRigidBody createRigidBody(
+        btCollisionShape shape, btMotionState motionState, boolean isHeavy) {
     var localInertia = new Vector3();
-    var mass = 0.5f;
-    shape.calculateLocalInertia(mass, localInertia);
+    var mass = isHeavy ? 500 : 0.5f;
+    if (!isHeavy) {
+      shape.calculateLocalInertia(mass, localInertia);
+    }
     var rigidBody = new btRigidBody(mass, motionState, shape, localInertia.scl(2f));
     rigidBody.setCollisionFlags(
         rigidBody.getCollisionFlags()
         | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
     rigidBody.setActivationState(Collision.DISABLE_DEACTIVATION);
-    rigidBody.setFriction(1.0f);
+    rigidBody.setFriction(1f);
     rigidBody.userData = this;
     return rigidBody;
   }
@@ -142,13 +140,13 @@ public class MovableBox
 
   @Override
   public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
-    modelInstance.getRenderables(renderables, pool);
+    scene.modelInstance.getRenderables(renderables, pool);
   }
 
   @Override
   public void dispose() {
     body.dispose();
-    modelInstance.model.dispose();
+    scene.modelInstance.model.dispose();
   }
 
   @Override
@@ -182,11 +180,11 @@ public class MovableBox
   @Override
   public ObjectReflection createObjectReflection() {
     numShared.increment();
-    modelInstance.materials.forEach(material -> material.remove(ColorAttribute.Emissive));
-    var reflection =  new ObjectReflection(modelInstance, 0.5f, numShared);
+    scene.modelInstance.materials.forEach(material -> material.remove(ColorAttribute.Emissive));
+    var reflection =  new ObjectReflection(scene.modelInstance, 0.5f, numShared);
     reflection.setRenderingPosGetter(this::calcRenderingPos);
     if (isSelected) {
-      modelInstance.materials.forEach(material -> material.set(colorAttrOnSelected));
+      scene.modelInstance.materials.forEach(material -> material.set(colorAttrOnSelected));
     }
     return reflection;
   }
@@ -231,13 +229,13 @@ public class MovableBox
   @Override
   public void select() { 
     isSelected = true;
-    modelInstance.materials.forEach(material -> material.set(colorAttrOnSelected));
+    scene.modelInstance.materials.forEach(material -> material.set(colorAttrOnSelected));
   }
 
   @Override
   public void deselect() {
     isSelected = false;
-    modelInstance.materials.forEach(material -> material.remove(ColorAttribute.Emissive));
+    scene.modelInstance.materials.forEach(material -> material.remove(ColorAttribute.Emissive));
   }
 
   @Override

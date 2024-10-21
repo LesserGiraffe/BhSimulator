@@ -46,8 +46,8 @@ public class SimulationObjectManagerView extends VisTable {
   }
 
   private void addImage() {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/cube.png";
-    var size = new Vector2(10 * UiUtil.mm, 10 * UiUtil.mm);
+    String imgPath = BhSimulator.ASSET_PATH + "/Images/box.png";
+    var size = new Vector2(12.7f * UiUtil.mm, 13.48f * UiUtil.mm);
     this.<VisImage>add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.mm);
   }
 

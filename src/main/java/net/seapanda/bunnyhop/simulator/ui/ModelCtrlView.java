@@ -80,9 +80,10 @@ public class ModelCtrlView extends VerticalGroup {
     table.top().right();
     table.pad(2 * UiUtil.mm);
     setBackgroundColorTo(table, viewOfSelectedModel);
-    table.<VisImageButton>add(genCreateBoxButton(accessor)).space(2 * UiUtil.mm);
-    table.<VisImageButton>add(genCreateLampButton(accessor)).space(2 * UiUtil.mm);
+    table.<VisImageButton>add(gencreateBoxButton(accessor, false)).space(2 * UiUtil.mm);
+    table.<VisImageButton>add(gencreateBoxButton(accessor, true)).space(2 * UiUtil.mm);
     table.row();
+    table.<VisImageButton>add(genCreateLampButton(accessor)).space(2 * UiUtil.mm);
     table.<VisImageButton>add(genDeleteButton(accessor)).space(2 * UiUtil.mm);
     table.row();
     table.addListener(event -> true);
@@ -114,14 +115,20 @@ public class ModelCtrlView extends VerticalGroup {
     return UiUtil.createUiButton(imgPath, size, UiUtil.mm, listener);
   }
 
-  /** 箱を作成するボタンを作成する. */
-  private VisImageButton genCreateBoxButton(CustomInputProcessor.AccessHelper accessor) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/cube.png";
-    var size = new Vector2(12 * UiUtil.mm, 12 * UiUtil.mm);
+  /**
+   * 箱を作成するボタンを作成する.
+   *
+   * @param isHeavy 重い箱を作成するボタンを作る場合 true
+   */
+  private VisImageButton gencreateBoxButton(
+      CustomInputProcessor.AccessHelper accessor, boolean isHeavy) {
+    String iconName = isHeavy ? "/Images/heavyBox.png" : "/Images/dice.png";
+    String imgPath = BhSimulator.ASSET_PATH + iconName;
+    var size = new Vector2(15.26f * UiUtil.mm, 16.5f * UiUtil.mm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        accessor.fnCreateBox.run();
+        accessor.fnCreateBox.accept(isHeavy);
       }
     };
     return UiUtil.createUiButton(imgPath, size, UiUtil.mm, listener);
