@@ -7,6 +7,6 @@ package net.seapanda.bunnyhop.simulator.obj.interfaces;
  */
 public abstract class PhysicalEntity extends Collidable {
   
-  /** 姿勢, 速度, 各速度などを初期状態に戻す. */
+  /** 姿勢, 速度, 角速度などを初期状態に戻す. */
   public abstract void resetPhysicalState();
 }

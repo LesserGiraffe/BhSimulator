@@ -52,6 +52,7 @@ ext.fs = File.separator
 ext.projName = 'BhSimulator'
 ext.jarLibName = 'Jlib'
 ext.bhRuntimeJarName = 'bhruntimelib.jar'
+ext.bhUtilityJarName = 'bhutility.jar'
 
 application {
   // Define the main class for the application.
@@ -69,7 +70,9 @@ task prepareLibs(type: Copy) {
 
   doLast {
     ant.copy(todir: "$projectDir/../$appDirName/$jarLibName") {
-      fileset(dir: "$projectDir/../lib", includes: "$bhRuntimeJarName")
+      fileset(
+        dir: "$projectDir/../lib",
+        includes: "$bhRuntimeJarName,$bhUtilityJarName")
     }
   }
 }

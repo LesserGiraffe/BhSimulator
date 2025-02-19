@@ -16,7 +16,6 @@
 
 package net.seapanda.bunnyhop.simulator;
 
-import com.badlogic.gdx.graphics.Color;
 import java.util.function.Consumer;
 import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd;
 import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.DetectColorCmd;
@@ -39,32 +38,18 @@ import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.SetRightEy
 import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.StopRaspiCarResp;
 import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.TurnLeftRaspiCarResp;
 import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.TurnRightRaspiCarResp;
-import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 
 /**
- * {@link BhSimulatorCmd} を処理するクラス.
+ * {@link BhSimulatorCmd} を処理する機能を規定したインタフェース.
  */
-public class SimulatorCmdProcessor {
+public interface SimulatorCmdProcessor {
   
-  private final RaspiCar raspiCar;
-
-  /**
-   * コンストラクタ.
-   *
-   * @param raspiCar コマンドで制御する {@link RaspiCar} オブジェクト
-   */
-  SimulatorCmdProcessor(RaspiCar raspiCar) {
-    this.raspiCar = raspiCar;
-  }
-
   /**
    * {@link MoveForwardRaspiCarCmd} を処理する.
    *
    * @param cmd 処理するコマンド
    */
-  public void process(MoveForwardRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
+  void process(MoveForwardRaspiCarCmd cmd);
 
   /**
    * {@link MoveForwardRaspiCarCmd} を処理する.
@@ -72,24 +57,16 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
    */
-  public synchronized void process(
+  void process(
       MoveForwardRaspiCarCmd cmd,
-      Consumer<? super MoveForwardRaspiCarResp> onCmdFinished) {
-    var resp = new MoveForwardRaspiCarResp(cmd.getId(), true);
-    raspiCar.moveForward(
-        cmd.speedLevel,
-        cmd.time,
-        (oldMotion, newMotion) -> onCmdFinished.accept(resp));
-  }
+      Consumer<? super MoveForwardRaspiCarResp> onCmdFinished);
 
   /**
    * {@link MoveBackwardRaspiCarCmd} を処理する.
    *
    * @param cmd 処理するコマンド
    */
-  public void process(MoveBackwardRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
+  void process(MoveBackwardRaspiCarCmd cmd);
 
   /**
    * {@link MoveBackwardRaspiCarCmd} を処理する.
@@ -97,24 +74,16 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
    */
-  public synchronized void process(
+  void process(
       MoveBackwardRaspiCarCmd cmd,
-      Consumer<? super MoveBackwardRaspiCarResp> onCmdFinished) {
-    var resp = new MoveBackwardRaspiCarResp(cmd.getId(), true);
-    raspiCar.moveBackward(
-        cmd.speedLevel,
-        cmd.time,
-        (oldMotion, newMotion) -> onCmdFinished.accept(resp));
-  }
+      Consumer<? super MoveBackwardRaspiCarResp> onCmdFinished);
 
   /**
    * {@link TurnRightRaspiCarCmd} を処理する.
    *
    * @param cmd 処理するコマンド
    */
-  public void process(TurnRightRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
+  void process(TurnRightRaspiCarCmd cmd);
 
   /**
    * {@link TurnRightRaspiCarCmd} を処理する.
@@ -122,24 +91,16 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
    */
-  public synchronized void process(
+  void process(
       TurnRightRaspiCarCmd cmd,
-      Consumer<? super TurnRightRaspiCarResp> onCmdFinished) {
-    var resp = new TurnRightRaspiCarResp(cmd.getId(), true);
-    raspiCar.turnRight(
-        cmd.speedLevel,
-        cmd.time,
-        (oldMotion, newMotion) -> onCmdFinished.accept(resp));
-  }
+      Consumer<? super TurnRightRaspiCarResp> onCmdFinished);
 
   /**
    * {@link TurnLeftRaspiCarCmd} を処理する.
    *
    * @param cmd 処理するコマンド
    */
-  public void process(TurnLeftRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
+  void process(TurnLeftRaspiCarCmd cmd);
 
   /**
    * {@link TurnLeftRaspiCarCmd} を処理する.
@@ -147,24 +108,16 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
    */
-  public synchronized void process(
+  void process(
       TurnLeftRaspiCarCmd cmd,
-      Consumer<? super TurnLeftRaspiCarResp> onCmdFinished) {
-    var resp = new TurnLeftRaspiCarResp(cmd.getId(), true);
-    raspiCar.turnLeft(
-        cmd.speedLevel,
-        cmd.time,
-        (oldMotion, newMotion) -> onCmdFinished.accept(resp));
-  }
+      Consumer<? super TurnLeftRaspiCarResp> onCmdFinished);
 
   /**
    * {@link StopRaspiCarCmd} を処理する.
    *
    * @param cmd 処理するコマンド
    */
-  public void process(StopRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
+  void process(StopRaspiCarCmd cmd);
 
   /**
    * {@link StopRaspiCarCmd} を処理する.
@@ -172,12 +125,9 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
    */
-  public synchronized void process(
+  void process(
       StopRaspiCarCmd cmd,
-      Consumer<? super StopRaspiCarResp> onCmdFinished) {
-    var resp = new StopRaspiCarResp(cmd.getId(), true);
-    raspiCar.stopMoving((oldMotion, newMotion) -> onCmdFinished.accept(resp));
-  }
+      Consumer<? super StopRaspiCarResp> onCmdFinished);
 
   /**
    * {@link MeasureDistanceCmd} を処理する.
@@ -185,9 +135,7 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @return コマンドのレスポンス
    */
-  public synchronized MeasureDistanceResp process(MeasureDistanceCmd cmd) {
-    return new MeasureDistanceResp(cmd.getId(), true, raspiCar.measureDistance());
-  }
+  MeasureDistanceResp process(MeasureDistanceCmd cmd);
 
   /**
    * {@link DetectColorCmd} を処理する.
@@ -195,10 +143,7 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @return コマンドのレスポンス
    */
-  public synchronized DetectColorResp process(DetectColorCmd cmd) {
-    Color color = raspiCar.detectColor();
-    return new DetectColorResp(cmd.getId(), true, color.r, color.g, color.b);
-  }
+  DetectColorResp process(DetectColorCmd cmd);
 
   /**
    * {@link SetLeftEyeColorCmd} を処理する.
@@ -206,10 +151,7 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @return コマンドのレスポンス
    */
-  public synchronized SetLeftEyeColorResp process(SetLeftEyeColorCmd cmd) {
-    raspiCar.setLeftEyeColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-    return new SetLeftEyeColorResp(cmd.getId(), true);
-  }
+  SetLeftEyeColorResp process(SetLeftEyeColorCmd cmd);
 
   /**
    * {@link SetRightEyeColorCmd} を処理する.
@@ -217,10 +159,7 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @return コマンドのレスポンス
    */
-  public synchronized SetRightEyeColorResp process(SetRightEyeColorCmd cmd) {
-    raspiCar.setRightEyeColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-    return new SetRightEyeColorResp(cmd.getId(), true);
-  }
+  SetRightEyeColorResp process(SetRightEyeColorCmd cmd);
 
   /**
    * {@link SetBothEyesColorCmd} を処理する.
@@ -228,8 +167,5 @@ public class SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @return コマンドのレスポンス
    */
-  public synchronized SetBothEyesColorResp process(SetBothEyesColorCmd cmd) {
-    raspiCar.setBothEyesColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-    return new SetBothEyesColorResp(cmd.getId(), true);
-  }
+  SetBothEyesColorResp process(SetBothEyesColorCmd cmd);
 }

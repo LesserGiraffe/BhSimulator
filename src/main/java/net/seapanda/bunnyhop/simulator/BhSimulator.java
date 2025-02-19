@@ -83,7 +83,7 @@ public class BhSimulator implements ApplicationListener {
     uiComposer = new UiComposer(inputProcessor.getUiView(), simObjManager.getUiView());
     Gdx.input.setInputProcessor(
         new InputMultiplexer(uiComposer.getInputProcessor(), inputProcessor, camCtrl));
-    cmdProcessor = new SimulatorCmdProcessor(simObjManager.getRaspiCar());
+    cmdProcessor = new SimulatorCmdProcessorImpl(simObjManager.getRaspiCar());
     latch.countDown();
   }
 
