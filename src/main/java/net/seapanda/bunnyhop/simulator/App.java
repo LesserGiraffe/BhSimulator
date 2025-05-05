@@ -20,6 +20,13 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowAdapter;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  * メインクラス.
@@ -30,20 +37,52 @@ public class App {
 
   /** メインメソッド. */
   public static void main(String[] args) throws Exception {
+    var options = new Options();
+    CommandLine cmd = parseCmd(args, options);
+    if (cmd.hasOption("help")) {
+      HelpFormatter hf = new HelpFormatter();
+      hf.printHelp("[opts]", options);
+      return;
+    }
+    if (cmd.hasOption("version")) {
+      System.out.println(BhConstants.APP_VERSION.toString());
+      return;
+    }
+
     Lwjgl3WindowListener windowListener = new Lwjgl3WindowAdapter() {
       @Override
       public boolean closeRequested() {
         return true;
       }
     };
-    
     var config = new Lwjgl3ApplicationConfiguration();
     config.setWindowListener(windowListener);
     config.setWindowedMode(800, 600);    
-    // config.setDecorated(false);
-    var app = new Lwjgl3Application(new BhSimulator(), config);
-    // Lwjgl3Window window = ((Lwjgl3Graphics) app.getGraphics()).getWindow();
-    // window.iconifyWindow(); // iconify the window
-    // window.restoreWindow();
+    new Lwjgl3Application(new BhSimulator(), config);
+  }
+
+  /** コマンドライン引数をパースする. */
+  private static CommandLine parseCmd(String[] args, Options options) {
+    options.addOption(Option.builder()
+        .longOpt("version")
+        .hasArg(false)
+        .desc("Output the version of BhSimulator and exit.")
+        .build());
+
+    options.addOption(Option.builder()
+        .longOpt("help")
+        .hasArg(false)
+        .desc("Print help about BhRuntime environment variables and exit.")
+        .build());
+
+    CommandLineParser parser = new DefaultParser();
+    CommandLine cmd = null;
+    try {
+      cmd = parser.parse(options, args);
+    } catch (ParseException e) {
+      String msg = "Invalid command-line arguments.\n%s".formatted(e);
+      System.err.println(msg);
+    }
+    return cmd;
   }
 }
