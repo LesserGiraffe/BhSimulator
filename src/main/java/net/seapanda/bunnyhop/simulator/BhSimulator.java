@@ -64,7 +64,7 @@ public class BhSimulator implements ApplicationListener {
   private Environment environment;
   private SimulationObjectManager simObjManager;
   private UiComposer uiComposer;
-  private SimulatorCmdProcessor cmdProcessor;
+  private SimulatorCmdProcessorImpl cmdProcessor;
   private CustomInputProcessor inputProcessor;
   private CountDownLatch latch = new CountDownLatch(1);
 
@@ -118,6 +118,7 @@ public class BhSimulator implements ApplicationListener {
 
   @Override
   public void render() {
+    cmdProcessor.executeCmds();
     float delta = Math.min(1f / 30f, Gdx.graphics.getDeltaTime());
     simObjManager.update(delta);
     Gdx.gl.glClearColor(0.3f, 0.5f, 0.8f, 1.f);

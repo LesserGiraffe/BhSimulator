@@ -133,39 +133,70 @@ public interface SimulatorCmdProcessor {
    * {@link MeasureDistanceCmd} を処理する.
    *
    * @param cmd 処理するコマンド
-   * @return コマンドのレスポンス
+   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
    */
-  MeasureDistanceResp process(MeasureDistanceCmd cmd);
+  void process(
+      MeasureDistanceCmd cmd,
+      Consumer<? super MeasureDistanceResp> onCmdFinished);
 
   /**
    * {@link DetectColorCmd} を処理する.
    *
    * @param cmd 処理するコマンド
-   * @return コマンドのレスポンス
+   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
    */
-  DetectColorResp process(DetectColorCmd cmd);
+  void process(
+      DetectColorCmd cmd,
+      Consumer<? super DetectColorResp> onCmdFinished);
 
   /**
    * {@link SetLeftEyeColorCmd} を処理する.
    *
    * @param cmd 処理するコマンド
-   * @return コマンドのレスポンス
    */
-  SetLeftEyeColorResp process(SetLeftEyeColorCmd cmd);
+  void process(SetLeftEyeColorCmd cmd);
+
+  /**
+   * {@link SetLeftEyeColorCmd} を処理する.
+   *
+   * @param cmd 処理するコマンド
+   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
+   */
+  void process(
+      SetLeftEyeColorCmd cmd,
+      Consumer<? super SetLeftEyeColorResp> onCmdFinished);
 
   /**
    * {@link SetRightEyeColorCmd} を処理する.
    *
    * @param cmd 処理するコマンド
-   * @return コマンドのレスポンス
    */
-  SetRightEyeColorResp process(SetRightEyeColorCmd cmd);
+  void process(SetRightEyeColorCmd cmd);
+
+  /**
+   * {@link SetRightEyeColorCmd} を処理する.
+   *
+   * @param cmd 処理するコマンド
+   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
+   */
+  void process(
+      SetRightEyeColorCmd cmd,
+      Consumer<? super SetRightEyeColorResp> onCmdFinished);
 
   /**
    * {@link SetBothEyesColorCmd} を処理する.
    *
    * @param cmd 処理するコマンド
-   * @return コマンドのレスポンス
    */
-  SetBothEyesColorResp process(SetBothEyesColorCmd cmd);
+  void process(SetBothEyesColorCmd cmd);
+
+  /**
+   * {@link SetBothEyesColorCmd} を処理する.
+   *
+   * @param cmd 処理するコマンド
+   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
+   */
+  void process(
+      SetBothEyesColorCmd cmd,
+      Consumer<? super SetBothEyesColorResp> onCmdFinished);
 }

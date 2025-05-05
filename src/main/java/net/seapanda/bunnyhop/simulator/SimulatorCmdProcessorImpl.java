@@ -17,6 +17,8 @@
 package net.seapanda.bunnyhop.simulator;
 
 import com.badlogic.gdx.graphics.Color;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd;
 import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.DetectColorCmd;
@@ -47,6 +49,7 @@ import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   
   private final RaspiCar raspiCar;
+  Queue<Runnable> actions = new ConcurrentLinkedQueue<>();
 
   /**
    * コンストラクタ.
@@ -57,20 +60,28 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
     this.raspiCar = raspiCar;
   }
 
+  /** 未実行のコマンドを処理する. */
+  void executeCmds() {
+    while (!actions.isEmpty()) {
+      actions.remove().run();
+    }
+  }
+
   @Override
   public void process(MoveForwardRaspiCarCmd cmd) {
     process(cmd, resp -> {});
   }
 
   @Override
-  public synchronized void process(
+  public void process(
       MoveForwardRaspiCarCmd cmd,
       Consumer<? super MoveForwardRaspiCarResp> onCmdFinished) {
     var resp = new MoveForwardRaspiCarResp(cmd.getId(), true);
-    raspiCar.moveForward(
-        cmd.speedLevel,
-        cmd.time,
-        (oldMotion, newMotion) -> onCmdFinished.accept(resp));
+    actions.offer(() -> 
+        raspiCar.moveForward(
+            cmd.speedLevel,
+            cmd.time,
+            (oldMotion, newMotion) -> onCmdFinished.accept(resp)));
   }
 
   @Override
@@ -79,14 +90,15 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   }
 
   @Override
-  public synchronized void process(
+  public void process(
       MoveBackwardRaspiCarCmd cmd,
       Consumer<? super MoveBackwardRaspiCarResp> onCmdFinished) {
     var resp = new MoveBackwardRaspiCarResp(cmd.getId(), true);
-    raspiCar.moveBackward(
-        cmd.speedLevel,
-        cmd.time,
-        (oldMotion, newMotion) -> onCmdFinished.accept(resp));
+    actions.offer(() -> 
+        raspiCar.moveBackward(
+            cmd.speedLevel,
+            cmd.time,
+            (oldMotion, newMotion) -> onCmdFinished.accept(resp)));
   }
 
   @Override
@@ -95,14 +107,15 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   }
 
   @Override
-  public synchronized void process(
+  public void process(
       TurnRightRaspiCarCmd cmd,
       Consumer<? super TurnRightRaspiCarResp> onCmdFinished) {
     var resp = new TurnRightRaspiCarResp(cmd.getId(), true);
-    raspiCar.turnRight(
-        cmd.speedLevel,
-        cmd.time,
-        (oldMotion, newMotion) -> onCmdFinished.accept(resp));
+    actions.offer(() -> 
+        raspiCar.turnRight(
+            cmd.speedLevel,
+            cmd.time,
+            (oldMotion, newMotion) -> onCmdFinished.accept(resp)));
   }
 
   @Override
@@ -111,14 +124,15 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   }
 
   @Override
-  public synchronized void process(
+  public void process(
       TurnLeftRaspiCarCmd cmd,
       Consumer<? super TurnLeftRaspiCarResp> onCmdFinished) {
     var resp = new TurnLeftRaspiCarResp(cmd.getId(), true);
-    raspiCar.turnLeft(
-        cmd.speedLevel,
-        cmd.time,
-        (oldMotion, newMotion) -> onCmdFinished.accept(resp));
+    actions.offer(() -> 
+        raspiCar.turnLeft(
+            cmd.speedLevel,
+            cmd.time,
+            (oldMotion, newMotion) -> onCmdFinished.accept(resp)));
   }
 
   @Override
@@ -127,39 +141,77 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   }
 
   @Override
-  public synchronized void process(
+  public void process(
       StopRaspiCarCmd cmd,
       Consumer<? super StopRaspiCarResp> onCmdFinished) {
     var resp = new StopRaspiCarResp(cmd.getId(), true);
-    raspiCar.stopMoving((oldMotion, newMotion) -> onCmdFinished.accept(resp));
+    actions.offer(() -> 
+        raspiCar.stopMoving((oldMotion, newMotion) -> onCmdFinished.accept(resp)));
   }
 
   @Override
-  public synchronized MeasureDistanceResp process(MeasureDistanceCmd cmd) {
-    return new MeasureDistanceResp(cmd.getId(), true, raspiCar.measureDistance());
+  public void process(
+      MeasureDistanceCmd cmd,
+      Consumer<? super MeasureDistanceResp> onCmdFinished) {
+    actions.offer(() -> {
+      var resp = new MeasureDistanceResp(cmd.getId(), true, raspiCar.measureDistance());
+      onCmdFinished.accept(resp);
+    });
   }
 
   @Override
-  public synchronized DetectColorResp process(DetectColorCmd cmd) {
-    Color color = raspiCar.detectColor();
-    return new DetectColorResp(cmd.getId(), true, color.r, color.g, color.b);
+  public void process(
+      DetectColorCmd cmd,
+      Consumer<? super DetectColorResp> onCmdFinished) {
+    actions.offer(() -> {
+      Color color = raspiCar.detectColor();
+      var resp = new DetectColorResp(cmd.getId(), true, color.r, color.g, color.b);
+      onCmdFinished.accept(resp);
+    });
   }
 
   @Override
-  public synchronized SetLeftEyeColorResp process(SetLeftEyeColorCmd cmd) {
-    raspiCar.setLeftEyeColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-    return new SetLeftEyeColorResp(cmd.getId(), true);
+  public void process(SetLeftEyeColorCmd cmd) {
+    process(cmd, resp -> {});
   }
 
   @Override
-  public synchronized SetRightEyeColorResp process(SetRightEyeColorCmd cmd) {
-    raspiCar.setRightEyeColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-    return new SetRightEyeColorResp(cmd.getId(), true);
+  public void process(
+      SetLeftEyeColorCmd cmd,
+      Consumer<? super SetLeftEyeColorResp> onCmdFinished) {
+    actions.offer(() -> {
+      raspiCar.setLeftEyeColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
+      onCmdFinished.accept(new SetLeftEyeColorResp(cmd.getId(), true));
+    });
   }
 
   @Override
-  public synchronized SetBothEyesColorResp process(SetBothEyesColorCmd cmd) {
-    raspiCar.setBothEyesColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-    return new SetBothEyesColorResp(cmd.getId(), true);
+  public void process(SetRightEyeColorCmd cmd) {
+    process(cmd, resp -> {});
+  }
+
+  @Override
+  public void process(
+      SetRightEyeColorCmd cmd,
+      Consumer<? super SetRightEyeColorResp> onCmdFinished) {
+    actions.offer(() -> {
+      raspiCar.setRightEyeColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
+      onCmdFinished.accept(new SetRightEyeColorResp(cmd.getId(), true));
+    });
+  }
+
+  @Override
+  public void process(SetBothEyesColorCmd cmd) {
+    process(cmd, resp -> {});
+  }
+
+  @Override
+  public void process(
+      SetBothEyesColorCmd cmd,
+      Consumer<? super SetBothEyesColorResp> onCmdFinished) {
+    actions.offer(() -> {
+      raspiCar.setBothEyesColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
+      onCmdFinished.accept(new SetBothEyesColorResp(cmd.getId(), true));
+    });
   }
 }
