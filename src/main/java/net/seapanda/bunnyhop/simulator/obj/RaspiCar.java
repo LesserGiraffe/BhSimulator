@@ -412,7 +412,8 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       rhsAnimCtrls.get(i).current.speed = animSpeed;
       lhsAnimCtrls.get(i).current.speed = animSpeed;
     }
-    switchMotion(Motion.MOVE_FORWARD, onMotionSwitched);
+    Motion motion = (time <= 0) ? Motion.IDLE : Motion.MOVE_FORWARD;
+    switchMotion(motion, onMotionSwitched);
     speed = calcSpeed(speedLevel);
     timeLeft = time;
   }
@@ -441,7 +442,8 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       rhsAnimCtrls.get(i).current.speed = -animSpeed;
       lhsAnimCtrls.get(i).current.speed = -animSpeed;
     }
-    switchMotion(Motion.MOVE_BACKWARD, onMotionSwitched);
+    Motion motion = (time <= 0) ? Motion.IDLE : Motion.MOVE_BACKWARD;
+    switchMotion(motion, onMotionSwitched);
     speed = -calcSpeed(speedLevel);
     timeLeft = time;
   }
@@ -470,7 +472,8 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       rhsAnimCtrls.get(i).current.speed = -animSpeed;
       lhsAnimCtrls.get(i).current.speed = animSpeed;
     }
-    switchMotion(Motion.TURN_RIGHT, onMotionSwitched);
+    Motion motion = (time <= 0) ? Motion.IDLE : Motion.TURN_RIGHT;
+    switchMotion(motion, onMotionSwitched);
     rotationSpeed = -calcAngularVelocity(speedLevel);
     timeLeft = time;
   }
@@ -499,7 +502,8 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       rhsAnimCtrls.get(i).current.speed = animSpeed;
       lhsAnimCtrls.get(i).current.speed = -animSpeed;
     }
-    switchMotion(Motion.TURN_LEFT, onMotionSwitched);
+    Motion motion = (time <= 0) ? Motion.IDLE : Motion.TURN_LEFT;
+    switchMotion(motion, onMotionSwitched);
     rotationSpeed = calcAngularVelocity(speedLevel);
     timeLeft = time;
   }
@@ -521,13 +525,13 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
 
   /** 速度レベルから速度 [m/s] を求める. */
   private float calcSpeed(float speedLevel) {
-    float speed = speedLevel * 0.0097f + 0.0475f;
+    float speed = speedLevel * 0.0146f + 0.0035f;
     return speed * modelScale * scale;
   }
 
   /** 速度レベルから角速度 [rad/s] を求める. */
   private float calcAngularVelocity(float speedLevel) {
-    return speedLevel * 0.179f + 0.25f;
+    return speedLevel * 0.1551f;
   }
 
   /** 速度レベルからアニメーションの再生速度を求める. */
