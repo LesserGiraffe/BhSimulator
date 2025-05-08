@@ -19,29 +19,9 @@ package net.seapanda.bunnyhop.simulator;
 import com.badlogic.gdx.graphics.Color;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.DetectColorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.MeasureDistanceCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.MoveBackwardRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.MoveForwardRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.SetBothEyesColorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.SetLeftEyeColorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.SetRightEyeColorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.StopRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.TurnLeftRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.TurnRightRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.DetectColorResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.MeasureDistanceResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.MoveBackwardRaspiCarResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.MoveForwardRaspiCarResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.SetBothEyesColorResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.SetLeftEyeColorResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.SetRightEyeColorResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.StopRaspiCarResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.TurnLeftRaspiCarResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.TurnRightRaspiCarResp;
+import java.util.function.BiConsumer;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
+import net.seapanda.bunnyhop.simulator.obj.RaspiCar.Motion;
 
 /**
  * {@link BhSimulatorCmd} を処理するクラス.
@@ -68,150 +48,177 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   }
 
   @Override
-  public void process(MoveForwardRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
+  public void process(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished) {
+    try {
+      String opcode = cmd[0];
+      if (opcode.equals(Opcode.MOVE.name)) {
+        move(cmd, onCmdFinished);
+      } else if (opcode.equals(Opcode.DETECT_COLOR.name)) {
+        detectColor(onCmdFinished);
+      } else if (opcode.equals(Opcode.MEASURE_DISTANCE.name)) {
+        measureDistance(onCmdFinished);
+      } else if (opcode.equals(Opcode.LIGHT_EYE.name)) {
+        lightEye(cmd, onCmdFinished);
+      } else {
+        onCmdFinished.accept(false, new String[] {"Unknown Command"});  
+      }
+    } catch (Throwable e) {
+      onCmdFinished.accept(false, new String[] {e.toString()});
+    }
   }
 
-  @Override
-  public void process(
-      MoveForwardRaspiCarCmd cmd,
-      Consumer<? super MoveForwardRaspiCarResp> onCmdFinished) {
-    var resp = new MoveForwardRaspiCarResp(cmd.getId(), true);
-    actions.offer(() -> 
-        raspiCar.moveForward(
-            cmd.speedLevel,
-            cmd.time,
-            (oldMotion, newMotion) -> onCmdFinished.accept(resp)));
+  /** RasPiCar を移動させるコマンドを処理する. */
+  private void move(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished) {
+    String motion = cmd[1];
+    BiConsumer<Motion, Motion> onMoveFinished =
+        (oldMotion, newMotion) -> onCmdFinished.accept(true, new String[] {});
+
+    if (motion.equals(MoveMotion.STOP.name)) {
+      actions.add(() -> raspiCar.stopMoving(onMoveFinished));
+      return;
+    }
+
+    float speed = Float.parseFloat(cmd[2]);
+    float time = Float.parseFloat(cmd[3]);
+    if (motion.equals(MoveMotion.FORWARD.name)) {
+      actions.add(() -> raspiCar.moveForward(speed, time, onMoveFinished));
+    } else if (motion.equals(MoveMotion.BACKWARD.name)) {
+      actions.add(() -> raspiCar.moveBackward(speed, time, onMoveFinished));
+    } else if (motion.equals(MoveMotion.CLOCKWISE.name)) {
+      actions.add(() -> raspiCar.turnRight(speed, time, onMoveFinished));
+    } else if (motion.equals(MoveMotion.COUNTER_CLOCKWISE.name)) {
+      actions.add(() -> raspiCar.turnLeft(speed, time, onMoveFinished));
+    } else {
+      onCmdFinished.accept(false, new String[] {"Invalid Move Command"});
+    }
   }
 
-  @Override
-  public void process(MoveBackwardRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
-
-  @Override
-  public void process(
-      MoveBackwardRaspiCarCmd cmd,
-      Consumer<? super MoveBackwardRaspiCarResp> onCmdFinished) {
-    var resp = new MoveBackwardRaspiCarResp(cmd.getId(), true);
-    actions.offer(() -> 
-        raspiCar.moveBackward(
-            cmd.speedLevel,
-            cmd.time,
-            (oldMotion, newMotion) -> onCmdFinished.accept(resp)));
-  }
-
-  @Override
-  public void process(TurnRightRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
-
-  @Override
-  public void process(
-      TurnRightRaspiCarCmd cmd,
-      Consumer<? super TurnRightRaspiCarResp> onCmdFinished) {
-    var resp = new TurnRightRaspiCarResp(cmd.getId(), true);
-    actions.offer(() -> 
-        raspiCar.turnRight(
-            cmd.speedLevel,
-            cmd.time,
-            (oldMotion, newMotion) -> onCmdFinished.accept(resp)));
-  }
-
-  @Override
-  public void process(TurnLeftRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
-
-  @Override
-  public void process(
-      TurnLeftRaspiCarCmd cmd,
-      Consumer<? super TurnLeftRaspiCarResp> onCmdFinished) {
-    var resp = new TurnLeftRaspiCarResp(cmd.getId(), true);
-    actions.offer(() -> 
-        raspiCar.turnLeft(
-            cmd.speedLevel,
-            cmd.time,
-            (oldMotion, newMotion) -> onCmdFinished.accept(resp)));
-  }
-
-  @Override
-  public void process(StopRaspiCarCmd cmd) {
-    process(cmd, resp -> {});
-  }
-
-  @Override
-  public void process(
-      StopRaspiCarCmd cmd,
-      Consumer<? super StopRaspiCarResp> onCmdFinished) {
-    var resp = new StopRaspiCarResp(cmd.getId(), true);
-    actions.offer(() -> 
-        raspiCar.stopMoving((oldMotion, newMotion) -> onCmdFinished.accept(resp)));
-  }
-
-  @Override
-  public void process(
-      MeasureDistanceCmd cmd,
-      Consumer<? super MeasureDistanceResp> onCmdFinished) {
-    actions.offer(() -> {
-      var resp = new MeasureDistanceResp(cmd.getId(), true, raspiCar.measureDistance());
-      onCmdFinished.accept(resp);
-    });
-  }
-
-  @Override
-  public void process(
-      DetectColorCmd cmd,
-      Consumer<? super DetectColorResp> onCmdFinished) {
+  /** 色を取得するコマンドを処理する. */
+  private void detectColor(BiConsumer<? super Boolean, ? super String[]> onCmdFinished) {
     actions.offer(() -> {
       Color color = raspiCar.detectColor();
-      var resp = new DetectColorResp(cmd.getId(), true, color.r, color.g, color.b);
-      onCmdFinished.accept(resp);
+      int red = Math.clamp((int) (color.r * 255.0f), 0, 255);
+      int green = Math.clamp((int) (color.g * 255.0f), 0, 255);
+      int blue = Math.clamp((int) (color.b * 255.0f), 0, 255);
+      onCmdFinished.accept(
+          true, new String[] {String.valueOf(red), String.valueOf(green), String.valueOf(blue)});
     });
   }
 
-  @Override
-  public void process(SetLeftEyeColorCmd cmd) {
-    process(cmd, resp -> {});
-  }
-
-  @Override
-  public void process(
-      SetLeftEyeColorCmd cmd,
-      Consumer<? super SetLeftEyeColorResp> onCmdFinished) {
+  /** 距離を計測するコマンドを処理する. */
+  private void measureDistance(BiConsumer<? super Boolean, ? super String[]> onCmdFinished) {
     actions.offer(() -> {
-      raspiCar.setLeftEyeColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-      onCmdFinished.accept(new SetLeftEyeColorResp(cmd.getId(), true));
+      float distance = raspiCar.measureDistance();
+      onCmdFinished.accept(true, new String[] {String.valueOf(distance)});
     });
+  }  
+
+  /** RasPiCar の目を光らせるコマンドを処理する. */
+  private void lightEye(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished) {
+    String eye = cmd[1];
+    int red = Integer.parseInt(cmd[2]);
+    int green = Integer.parseInt(cmd[3]);
+    int blue = Integer.parseInt(cmd[4]);
+    EyeColors eyeColors = getEyeColors(red, green, blue);
+    
+    if (eye.equals(Eye.LEFT.name)) {
+      actions.add(() -> {
+        raspiCar.setLeftEyeColor(eyeColors.left);
+        onCmdFinished.accept(true, new String[] {});
+      });
+    } else if (eye.equals(Eye.RIGHT.name)) {
+      actions.add(() -> {
+        raspiCar.setRightEyeColor(eyeColors.right);
+        onCmdFinished.accept(true, new String[] {});
+      });
+    } else if (eye.equals(Eye.BOTH.name)) {
+      actions.add(() -> {
+        raspiCar.setLeftEyeColor(eyeColors.left);
+        raspiCar.setRightEyeColor(eyeColors.right);
+        onCmdFinished.accept(true, new String[] {});
+      });
+    } else {
+      onCmdFinished.accept(false, new String[] {"Invalid Eye Option"});
+    }
+  }
+
+  /** 目の色を取得する. */
+  private EyeColors getEyeColors(int red, int green, int blue) {
+    Color left = raspiCar.defaultLeftEyeColor;
+    Color right = raspiCar.defaultRightEyeColor;
+    if (!(red == -1 && green == -1 && blue == -1)) {
+      left = new Color(red / 255f, green / 255f, blue / 255f, 1.0f);
+      right = left;
+    }
+    return new EyeColors(left, right);
   }
 
   @Override
-  public void process(SetRightEyeColorCmd cmd) {
-    process(cmd, resp -> {});
+  public void halt() {
+    actions.clear();
+    actions.add(() -> raspiCar.setLeftEyeColor(raspiCar.defaultLeftEyeColor));
+    actions.add(() -> raspiCar.setRightEyeColor(raspiCar.defaultRightEyeColor));
+    actions.add(() -> raspiCar.stopMoving());
   }
 
-  @Override
-  public void process(
-      SetRightEyeColorCmd cmd,
-      Consumer<? super SetRightEyeColorResp> onCmdFinished) {
-    actions.offer(() -> {
-      raspiCar.setRightEyeColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-      onCmdFinished.accept(new SetRightEyeColorResp(cmd.getId(), true));
-    });
+  /** コマンドのオペコード. */
+  private enum Opcode {
+    MOVE("move"),
+    DETECT_COLOR("detect-color"),
+    MEASURE_DISTANCE("measure-distance"),
+    LIGHT_EYE("light-eye");
+
+    public final String name;
+
+    private Opcode(String name) {
+      this.name = name;
+    }
+  
+    @Override
+    public String toString() {
+      return name;
+    }
   }
 
-  @Override
-  public void process(SetBothEyesColorCmd cmd) {
-    process(cmd, resp -> {});
+  /** 移動の種類. */
+  private enum MoveMotion {
+    FORWARD("fwd"),
+    BACKWARD("bwd"),
+    CLOCKWISE("cw"),
+    COUNTER_CLOCKWISE("ccw"),
+    STOP("stop");
+
+    public final String name;
+
+    private MoveMotion(String name) {
+      this.name = name;
+    }
+  
+    @Override
+    public String toString() {
+      return name;
+    }
   }
 
-  @Override
-  public void process(
-      SetBothEyesColorCmd cmd,
-      Consumer<? super SetBothEyesColorResp> onCmdFinished) {
-    actions.offer(() -> {
-      raspiCar.setBothEyesColor(new Color(cmd.red, cmd.green, cmd.blue, 1f));
-      onCmdFinished.accept(new SetBothEyesColorResp(cmd.getId(), true));
-    });
+
+  /** 目の種類. */
+  private enum Eye {
+    LEFT("left"),
+    RIGHT("right"),
+    BOTH("both");
+
+    public final String name;
+
+    private Eye(String name) {
+      this.name = name;
+    }
+  
+    @Override
+    public String toString() {
+      return name;
+    }
   }
+
+  /** 目の色を格納するレコード. */
+  private record EyeColors(Color left, Color right) {}
 }

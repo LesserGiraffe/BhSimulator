@@ -16,187 +16,26 @@
 
 package net.seapanda.bunnyhop.simulator;
 
-import java.util.function.Consumer;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.DetectColorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.MeasureDistanceCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.MoveBackwardRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.MoveForwardRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.SetBothEyesColorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.SetLeftEyeColorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.SetRightEyeColorCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.StopRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.TurnLeftRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorCmd.TurnRightRaspiCarCmd;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.DetectColorResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.MeasureDistanceResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.MoveBackwardRaspiCarResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.MoveForwardRaspiCarResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.SetBothEyesColorResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.SetLeftEyeColorResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.SetRightEyeColorResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.StopRaspiCarResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.TurnLeftRaspiCarResp;
-import net.seapanda.bunnyhop.bhprogram.common.message.BhSimulatorResp.TurnRightRaspiCarResp;
+import java.util.function.BiConsumer;
 
 /**
  * {@link BhSimulatorCmd} を処理する機能を規定したインタフェース.
  */
 public interface SimulatorCmdProcessor {
-  
-  /**
-   * {@link MoveForwardRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   */
-  void process(MoveForwardRaspiCarCmd cmd);
 
   /**
-   * {@link MoveForwardRaspiCarCmd} を処理する.
+   * シミュレータコマンドを処理する.
    *
    * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
+   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド.
+   *                      <p> 第一引数 : 成否フラグ. (true -> 成功, false -> 失敗) </p>
+   *                      <p> 第二引数 : コマンドレスポンス </p>
    */
-  void process(
-      MoveForwardRaspiCarCmd cmd,
-      Consumer<? super MoveForwardRaspiCarResp> onCmdFinished);
+  void process(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished);
 
   /**
-   * {@link MoveBackwardRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
+   * 現在実行中のコマンドの処理を停止する.
+   * 未実行のコマンドを破棄する.
    */
-  void process(MoveBackwardRaspiCarCmd cmd);
-
-  /**
-   * {@link MoveBackwardRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      MoveBackwardRaspiCarCmd cmd,
-      Consumer<? super MoveBackwardRaspiCarResp> onCmdFinished);
-
-  /**
-   * {@link TurnRightRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   */
-  void process(TurnRightRaspiCarCmd cmd);
-
-  /**
-   * {@link TurnRightRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      TurnRightRaspiCarCmd cmd,
-      Consumer<? super TurnRightRaspiCarResp> onCmdFinished);
-
-  /**
-   * {@link TurnLeftRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   */
-  void process(TurnLeftRaspiCarCmd cmd);
-
-  /**
-   * {@link TurnLeftRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      TurnLeftRaspiCarCmd cmd,
-      Consumer<? super TurnLeftRaspiCarResp> onCmdFinished);
-
-  /**
-   * {@link StopRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   */
-  void process(StopRaspiCarCmd cmd);
-
-  /**
-   * {@link StopRaspiCarCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      StopRaspiCarCmd cmd,
-      Consumer<? super StopRaspiCarResp> onCmdFinished);
-
-  /**
-   * {@link MeasureDistanceCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      MeasureDistanceCmd cmd,
-      Consumer<? super MeasureDistanceResp> onCmdFinished);
-
-  /**
-   * {@link DetectColorCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      DetectColorCmd cmd,
-      Consumer<? super DetectColorResp> onCmdFinished);
-
-  /**
-   * {@link SetLeftEyeColorCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   */
-  void process(SetLeftEyeColorCmd cmd);
-
-  /**
-   * {@link SetLeftEyeColorCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      SetLeftEyeColorCmd cmd,
-      Consumer<? super SetLeftEyeColorResp> onCmdFinished);
-
-  /**
-   * {@link SetRightEyeColorCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   */
-  void process(SetRightEyeColorCmd cmd);
-
-  /**
-   * {@link SetRightEyeColorCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      SetRightEyeColorCmd cmd,
-      Consumer<? super SetRightEyeColorResp> onCmdFinished);
-
-  /**
-   * {@link SetBothEyesColorCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   */
-  void process(SetBothEyesColorCmd cmd);
-
-  /**
-   * {@link SetBothEyesColorCmd} を処理する.
-   *
-   * @param cmd 処理するコマンド
-   * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド
-   */
-  void process(
-      SetBothEyesColorCmd cmd,
-      Consumer<? super SetBothEyesColorResp> onCmdFinished);
+  void halt();
 }

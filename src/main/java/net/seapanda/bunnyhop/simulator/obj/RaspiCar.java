@@ -125,9 +125,9 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 前の物理シミュレーションステップで前進, 後退動作で生じた速度. */
   private Vector3 prevVelocity = new Vector3(0f, 0f, 0f);
   /** 右目の初期色. */
-  private final Color defaultRightEyeColor;
+  public final Color defaultRightEyeColor;
   /** 左目の初期色. */
-  private final Color defaultLeftEyeColor;
+  public final Color defaultLeftEyeColor;
   /** UI のルートコンポーネント. */
   private RaspiCarCtrlView uiComponent;
 
@@ -632,10 +632,12 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 
    * この RaspiCar の左目の色を設定する.
    *
-   * @param color 設定する目の色.  null を指定すると初期色にする.
+   * @param color 設定する目の色.
    */
   public void setLeftEyeColor(Color color) {
-    color = (color == null) ? defaultLeftEyeColor : color;
+    if (color == null) {
+      return;
+    }
     Material material = scene.modelInstance.getMaterial("eye-L");
     material.set(ColorAttribute.createDiffuse(color));
   }
@@ -643,10 +645,12 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 
    * この RaspiCar の右目の色を設定する.
    *
-   * @param color 設定する目の色.  null を指定すると初期色にする.
+   * @param color 設定する目の色.
    */
   public void setRightEyeColor(Color color) {
-    color = (color == null) ? defaultRightEyeColor : color;
+    if (color == null) {
+      return;
+    }
     Material material = scene.modelInstance.getMaterial("eye-R");
     material.set(ColorAttribute.createDiffuse(color));
   }
