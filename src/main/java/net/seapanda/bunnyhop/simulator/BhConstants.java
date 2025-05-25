@@ -9,5 +9,5 @@ import net.seapanda.bunnyhop.utility.AppVersion;
  */
 public class BhConstants {
   /** アプリケーションのバージョン. */
-  public static final AppVersion APP_VERSION = AppVersion.of("bhsim-1.0.0");
+  public static final AppVersion APP_VERSION = AppVersion.of("bhsim-0.7.0");
 }
