@@ -1,6 +1,6 @@
 package net.seapanda.bunnyhop.simulator;
 
-import net.seapanda.bunnyhop.utility.AppVersion;
+import net.seapanda.bunnyhop.utility.version.AppVersion;
 
 /**
  * BhSimulator の定数一式をまとめたクラス.
