@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar.Motion;
+import net.seapanda.bunnyhop.utility.function.ConsumerInvoker;
 
 /**
  * {@link BhSimulatorCmd} を処理するクラス.
@@ -29,7 +30,8 @@ import net.seapanda.bunnyhop.simulator.obj.RaspiCar.Motion;
 class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   
   private final RaspiCar raspiCar;
-  Queue<Runnable> actions = new ConcurrentLinkedQueue<>();
+  private final Queue<Runnable> actions = new ConcurrentLinkedQueue<>();
+  private final CallbackRegistryImpl cbRegistry = new CallbackRegistryImpl();
 
   /**
    * コンストラクタ.
@@ -52,12 +54,16 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
     try {
       String opcode = cmd[0];
       if (opcode.equals(Opcode.MOVE.name)) {
+        cbRegistry.onCmdProcessingInvoker.invoke(new CmdProcessingEvent(cmd));
         move(cmd, onCmdFinished);
       } else if (opcode.equals(Opcode.DETECT_COLOR.name)) {
+        cbRegistry.onCmdProcessingInvoker.invoke(new CmdProcessingEvent(cmd));
         detectColor(onCmdFinished);
       } else if (opcode.equals(Opcode.MEASURE_DISTANCE.name)) {
+        cbRegistry.onCmdProcessingInvoker.invoke(new CmdProcessingEvent(cmd));
         measureDistance(onCmdFinished);
       } else if (opcode.equals(Opcode.LIGHT_EYE.name)) {
+        cbRegistry.onCmdProcessingInvoker.invoke(new CmdProcessingEvent(cmd));
         lightEye(cmd, onCmdFinished);
       } else {
         onCmdFinished.accept(false, new String[] {"Unknown Command"});  
@@ -161,6 +167,11 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
     actions.add(() -> raspiCar.stopMoving());
   }
 
+  @Override
+  public CallbackRegistry getCallbackRegistry() {
+    return cbRegistry;
+  }
+
   /** コマンドのオペコード. */
   private enum Opcode {
     MOVE("move"),
@@ -200,7 +211,6 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
     }
   }
 
-
   /** 目の種類. */
   private enum Eye {
     LEFT("left"),
@@ -221,4 +231,16 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
 
   /** 目の色を格納するレコード. */
   private record EyeColors(Color left, Color right) {}
+
+  /** コマンドプロセッサに対するイベントハンドラの登録および削除操作を提供するクラス. */
+  public class CallbackRegistryImpl implements CallbackRegistry {
+    
+    /** コマンドを処理する直前に呼ばれるイベントハンドラを管理するオブジェクト. */
+    private ConsumerInvoker<CmdProcessingEvent> onCmdProcessingInvoker = new ConsumerInvoker<>();
+
+    @Override
+    public ConsumerInvoker<CmdProcessingEvent>.Registry getOnCmdProcessing() {
+      return onCmdProcessingInvoker.getRegistry();
+    }
+  }
 }

@@ -17,6 +17,7 @@
 package net.seapanda.bunnyhop.simulator;
 
 import java.util.function.BiConsumer;
+import net.seapanda.bunnyhop.utility.function.ConsumerInvoker;
 
 /**
  * {@link BhSimulatorCmd} を処理する機能を規定したインタフェース.
@@ -38,4 +39,25 @@ public interface SimulatorCmdProcessor {
    * 未実行のコマンドを破棄する.
    */
   void halt();
+
+  /**
+   * このコマンドプロセッサに対するイベントハンドラの追加と削除を行うオブジェクトを返す.
+   *
+   * @return このコマンドプロセッサに対するイベントハンドラの追加と削除を行うオブジェクト
+   */
+  CallbackRegistry getCallbackRegistry();
+
+  /** コマンドプロセッサに対するイベントハンドラの登録および削除操作を規定したインタフェース. */
+  public interface CallbackRegistry {
+    
+    /** コマンドを処理する直前に呼ばれるイベントハンドラのレジストリを取得する. */
+    ConsumerInvoker<CmdProcessingEvent>.Registry getOnCmdProcessing();
+  }
+  
+  /**
+   * コマンドプロセッサがコマンドを処理するときの情報を格納したレコード.
+   *
+   * @param cmd 処理するコマンド
+   */
+  public record CmdProcessingEvent(String[] cmd) {}
 }
