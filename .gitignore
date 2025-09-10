@@ -1,7 +1,10 @@
 .settings
 .vscode
+.idea
 build
 bin
 misc
 google-java-format_windows-x86-64.exe
 /App/Jlib/
+/out
+/BhSimulator.iml

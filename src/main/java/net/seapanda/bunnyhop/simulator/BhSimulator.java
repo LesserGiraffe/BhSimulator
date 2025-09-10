@@ -31,15 +31,13 @@ import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.kotcrab.vis.ui.VisUI;
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import net.seapanda.bunnyhop.simulator.ui.UiComposer;
 import net.seapanda.bunnyhop.simulator.ui.UiUtil;
+import net.seapanda.bunnyhop.utility.Utility;
 
 /**
  * BunnyHop で作成したプログラムの動作をシミュレーションするためのクラス.
@@ -49,12 +47,7 @@ import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 public class BhSimulator implements ApplicationListener {
 
   static {
-    String ps = System.getProperty("path.separator");
-    String[] paths = System.getProperty("java.class.path").split(ps);
-    String pathStr = paths[paths.length - 1];
-    Path jarPath = Paths.get(new File(pathStr).getAbsolutePath());
-    String root = (jarPath.getRoot() == null) ? "" : jarPath.getRoot().toString();
-    ASSET_PATH = root + jarPath.subpath(0, jarPath.getNameCount() - 2).toString() + "/SimAssets";
+    ASSET_PATH = Utility.execPath + Utility.fs + "SimAssets";
   }
 
   public static String ASSET_PATH;
@@ -66,7 +59,7 @@ public class BhSimulator implements ApplicationListener {
   private UiComposer uiComposer;
   private SimulatorCmdProcessorImpl cmdProcessor;
   private CustomInputProcessor inputProcessor;
-  private CountDownLatch latch = new CountDownLatch(1);
+  private final CountDownLatch latch = new CountDownLatch(1);
 
   @Override
   public void create() {
