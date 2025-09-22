@@ -30,16 +30,23 @@ import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader.Config;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 import com.kotcrab.vis.ui.VisUI;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import net.seapanda.bunnyhop.simulator.common.BhSimConstants;
 import net.seapanda.bunnyhop.simulator.common.BhSimSettings;
+import net.seapanda.bunnyhop.simulator.common.TextDefs;
 import net.seapanda.bunnyhop.simulator.ui.UiComposer;
 import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 import net.seapanda.bunnyhop.utility.Utility;
+import net.seapanda.bunnyhop.utility.textdb.JsonTextDatabase;
 
 /**
  * BunnyHop で作成したプログラムの動作をシミュレーションするためのクラス.
@@ -62,6 +69,11 @@ public class BhSimulator implements ApplicationListener {
   private SimulatorCmdProcessorImpl cmdProcessor;
   private CustomInputProcessor inputProcessor;
   private final CountDownLatch latch = new CountDownLatch(1);
+
+  /** コンストラクタ. */
+  public BhSimulator() throws Exception {
+    buildTextDb();
+  }
 
   @Override
   public void create() {
@@ -185,5 +197,16 @@ public class BhSimulator implements ApplicationListener {
   /** キーが押された時のイベントハンドラを設定する. */
   public void setOnKeyPressed(Consumer<Integer> onKeyPressed) {
     inputProcessor.setOnKeyPressed(onKeyPressed);
+  }
+
+  /** テキストデータをファイルから読み込んで, {@link TextDefs} 経由でアクセス出来るようにする. */
+  public static void buildTextDb() throws IOException, JsonIOException, JsonSyntaxException {
+    Path textDbFile = Paths.get(
+        Utility.execPath,
+        BhSimConstants.Path.Dir.LANGUAGE,
+        BhSimSettings.language,
+        BhSimConstants.Path.File.LANGUAGE_FILE);
+    final var textDb = new JsonTextDatabase(textDbFile);
+    TextDefs.setTextDatabase(textDb);
   }
 }
