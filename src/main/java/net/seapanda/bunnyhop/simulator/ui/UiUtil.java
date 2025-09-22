@@ -15,6 +15,7 @@ import com.kotcrab.vis.ui.widget.VisImage;
 import com.kotcrab.vis.ui.widget.VisImageButton;
 import com.kotcrab.vis.ui.widget.VisLabel;
 import net.seapanda.bunnyhop.simulator.BhSimulator;
+import net.seapanda.bunnyhop.simulator.common.BhSimSettings;
 
 /**
  * UI に関係する処理を集めたユーティリティクラス.
@@ -23,11 +24,17 @@ import net.seapanda.bunnyhop.simulator.BhSimulator;
  */
 public class UiUtil {
 
-  public static VisImageButton button;
-
+  /** 物理 DPI. */
   public static final float dpi = Gdx.graphics.getDensity() * 160f;
+  /** mm からピクセル数に変換するときに掛ける値. */
   public static final float mm = Gdx.graphics.getDensity() * 160f / 25.4f;
-  public static final float ptScale = Gdx.graphics.getDensity() * 160f / 72f;
+  /** mm に UI スケールを掛けた値. */
+  public static final float sclmm = mm * BhSimSettings.Ui.SCALE;
+  /** ポイント数にかけるとモニタの物理解像度によらないポイント数になる値. */
+  public static final float pt = Gdx.graphics.getDensity() * 160f / 72f;
+  /* pt に UI スケールを掛けた値. */
+  public static final float sclpt = pt * BhSimSettings.Ui.SCALE;
+
   private static String fontPath = BhSimulator.ASSET_PATH + "/Images/GenShinGothic-Normal.ttf";
   private static FreeTypeFontGenerator fontGenerator = 
       new FreeTypeFontGenerator(Gdx.files.absolute(fontPath));
@@ -41,7 +48,6 @@ public class UiUtil {
     var btn = new VisImageButton(drawable, drawable);
     btn.addListener(listener);
     btn.pad(pad);
-    button = btn;
     return btn;
   }
 
@@ -66,17 +72,12 @@ public class UiUtil {
   public static BitmapFont createFont(String text, float fontSize, Color textColor) {
     var parameter = new FreeTypeFontParameter();
     parameter.characters = text;
-    parameter.size = toScaledPt(fontSize);
+    parameter.size = Math.round(fontSize);
     parameter.color = textColor;
     return fontGenerator.generateFont(parameter);
   }
 
   public static void dispose() {
     fontGenerator.dispose();
-  }
-
-  /** ポイント数 {@code pt} を画面の解像度を考慮したポイントに直す. */
-  private static int toScaledPt(float pt) {
-    return Math.round(ptScale * pt);
   }
 }

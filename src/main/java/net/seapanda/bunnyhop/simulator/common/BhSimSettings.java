@@ -24,4 +24,10 @@ package net.seapanda.bunnyhop.simulator.common;
 public class BhSimSettings {
 
   public static volatile String language = "Japanese";
+
+  /** UI 関連のパラメータ. */
+  public static class Ui {
+    /** UI コンポーネントの大きさの倍率. */
+    public static volatile float SCALE = 1.0f;
+  }
 }

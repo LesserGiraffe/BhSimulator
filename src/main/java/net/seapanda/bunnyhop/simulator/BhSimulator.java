@@ -36,6 +36,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import net.seapanda.bunnyhop.simulator.common.BhSimConstants;
+import net.seapanda.bunnyhop.simulator.common.BhSimSettings;
 import net.seapanda.bunnyhop.simulator.ui.UiComposer;
 import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 import net.seapanda.bunnyhop.utility.Utility;
@@ -65,6 +66,7 @@ public class BhSimulator implements ApplicationListener {
   @Override
   public void create() {
     var skinScale = UiUtil.dpi >= BhSimConstants.Ui.X2_SKIN_DPI_THRESHOLD
+        || (BhSimSettings.Ui.SCALE > 1)
         ? VisUI.SkinScale.X2 : VisUI.SkinScale.X1;
     VisUI.load(skinScale);
     Bullet.init(true);

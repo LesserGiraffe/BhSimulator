@@ -42,19 +42,19 @@ public class SimulationObjectManagerView extends VisTable {
     this.simObjManager = simObjManager;
     addImage();
     addLabel();
-    this.pad(2 * UiUtil.mm);
+    this.pad(2 * UiUtil.sclmm);
   }
 
   private void addImage() {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/box.png";
-    var size = new Vector2(12.7f * UiUtil.mm, 13.48f * UiUtil.mm);
-    this.<VisImage>add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.mm);
+    var size = new Vector2(12.7f * UiUtil.sclmm, 13.48f * UiUtil.sclmm);
+    this.<VisImage>add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
   }
 
   private void addLabel() {
     labelOfNumObjects = this.add("").getActor();
     LabelStyle style = new LabelStyle(labelOfNumObjects.getStyle());
-    style.font = UiUtil.createFont(" 0123456789/", 15, Color.WHITE);
+    style.font = UiUtil.createFont(" 0123456789/", 15 * UiUtil.sclpt, Color.WHITE);
     labelOfNumObjects.setStyle(style);
   }
 

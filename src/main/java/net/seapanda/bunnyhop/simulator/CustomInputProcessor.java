@@ -53,7 +53,7 @@ public class CustomInputProcessor extends InputAdapter implements UiViewProvider
   /** Simulation Object 選択時の交差点. */
   private Vector3 pointOfReflection = new Vector3();
   /** 選択中の 3D モデル. */
-  private List<Collidable> selectedModels = new ArrayList<>();
+  private final List<Collidable> selectedModels = new ArrayList<>();
   /** ドラッグ中の 3D モデル. */
   private ObjectReflection dragged;
   /** 押されたマウスボタン. */

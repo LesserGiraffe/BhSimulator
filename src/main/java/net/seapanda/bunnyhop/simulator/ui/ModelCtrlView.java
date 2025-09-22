@@ -56,14 +56,14 @@ public class ModelCtrlView extends VerticalGroup {
    * @param accessor {@link CustomInputProcessor} のメンバにアクセスするためのヘルパークラス.
    */
   public ModelCtrlView(CustomInputProcessor.AccessHelper accessor) {
-    space(2 * UiUtil.mm);
+    space(2 * UiUtil.sclmm);
     top().right();
     columnRight();
     this.accessor = accessor;
     addActor(new CameraManualView().top().right());
     addActor(genModelCreationView());
     addActor(viewOfSelectedModel);
-    viewOfSelectedModel.pad(2 * UiUtil.mm);
+    viewOfSelectedModel.pad(2 * UiUtil.sclmm);
     ClickListener listener = new ClickListener() {
       @Override
       public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -78,13 +78,13 @@ public class ModelCtrlView extends VerticalGroup {
   private VisTable genModelCreationView() {
     VisTable table = new VisTable();
     table.top().right();
-    table.pad(2 * UiUtil.mm);
+    table.pad(2 * UiUtil.sclmm);
     setBackgroundColorTo(table, viewOfSelectedModel);
-    table.<VisImageButton>add(createBoxButton(accessor, false)).space(2 * UiUtil.mm);
-    table.<VisImageButton>add(createBoxButton(accessor, true)).space(2 * UiUtil.mm);
+    table.<VisImageButton>add(createBoxButton(accessor, false)).space(2 * UiUtil.sclmm);
+    table.<VisImageButton>add(createBoxButton(accessor, true)).space(2 * UiUtil.sclmm);
     table.row();
-    table.<VisImageButton>add(createLampButton(accessor)).space(2 * UiUtil.mm);
-    table.<VisImageButton>add(genDeleteButton(accessor)).space(2 * UiUtil.mm);
+    table.<VisImageButton>add(createLampButton(accessor)).space(2 * UiUtil.sclmm);
+    table.<VisImageButton>add(genDeleteButton(accessor)).space(2 * UiUtil.sclmm);
     table.row();
     table.addListener(event -> true);
     table.setTouchable(Touchable.enabled);
@@ -105,14 +105,14 @@ public class ModelCtrlView extends VerticalGroup {
   /** オブジェクトを削除するボタンを作成する. */
   private VisImageButton genDeleteButton(CustomInputProcessor.AccessHelper accessor) {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/closedTrashbox.png";
-    var size = new Vector2(11 * UiUtil.mm, 16 * UiUtil.mm);
+    var size = new Vector2(11 * UiUtil.sclmm, 16 * UiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         accessor.fnDeleteSelectedObjects.run();
       }
     };
-    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.mm, listener);
+    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.sclmm, listener);
   }
 
   /**
@@ -124,27 +124,27 @@ public class ModelCtrlView extends VerticalGroup {
       CustomInputProcessor.AccessHelper accessor, boolean isHeavy) {
     String iconName = isHeavy ? "/Images/heavyBox.png" : "/Images/dice.png";
     String imgPath = BhSimulator.ASSET_PATH + iconName;
-    var size = new Vector2(12 * UiUtil.mm, 12.5f * UiUtil.mm);
+    var size = new Vector2(12 * UiUtil.sclmm, 12.5f * UiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         accessor.fnCreateBox.accept(isHeavy);
       }
     };
-    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.mm, listener);
+    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.sclmm, listener);
   }
 
   /** ランプを作成するボタンを作成する. */
   private VisImageButton createLampButton(CustomInputProcessor.AccessHelper accessor) {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/lamp.png";
-    var size = new Vector2(12 * UiUtil.mm, 12 * UiUtil.mm);
+    var size = new Vector2(12 * UiUtil.sclmm, 12 * UiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         accessor.fnCreateLamp.run();
       }
     };
-    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.mm, listener);
+    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.sclmm, listener);
   }
 
   @Override

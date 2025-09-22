@@ -26,7 +26,7 @@ import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.obj.Box;
 
 /**
- * {@link ImmovableBox} をコントロールする UI コンポーネントを持つ View.
+ * {@link Box} をコントロールする UI コンポーネントを持つ View.
  *
  * @author K.Koike
  */
@@ -36,7 +36,7 @@ public class MovableBoxCtrlView extends VisTable {
 
   /** コンストラクタ.
    *
-   * @param model このコントロールビューで操作する {@link ImmovableBox} オブジェクト.
+   * @param model このコントロールビューで操作する {@link Box} オブジェクト.
    */
   public MovableBoxCtrlView(Box model) {
     addRotationSlider(model);
@@ -45,8 +45,8 @@ public class MovableBoxCtrlView extends VisTable {
   /** Yaw 軸周りに回転させるスライダを追加する. */
   private void addRotationSlider(Box model) {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/rotation.png";
-    var size = new Vector2(16f * UiUtil.mm, 8.47f * UiUtil.mm);
-    this.<VisImage>add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.mm);
+    var size = new Vector2(16f * UiUtil.sclmm, 8.47f * UiUtil.sclmm);
+    this.<VisImage>add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
 
     VisSlider slider = new VisSlider(0f, 60f, 1f, false);
     slider.setValue(slider.getMaxValue() / 2);
@@ -60,6 +60,6 @@ public class MovableBoxCtrlView extends VisTable {
       }
     };
     slider.addListener(listener);
-    this.<VisSlider>add(slider).width(30f * UiUtil.mm);
+    this.<VisSlider>add(slider).width(30f * UiUtil.sclmm);
   }
 }

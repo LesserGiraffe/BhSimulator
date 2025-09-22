@@ -30,6 +30,7 @@ import com.badlogic.gdx.utils.Align;
 import com.kotcrab.vis.ui.widget.CollapsibleWidget;
 import com.kotcrab.vis.ui.widget.VisCheckBox;
 import com.kotcrab.vis.ui.widget.VisImage;
+import com.kotcrab.vis.ui.widget.VisLabel;
 import com.kotcrab.vis.ui.widget.VisTable;
 import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.common.TextDefs;
@@ -48,7 +49,7 @@ public class CameraManualView extends VisTable {
     row();  
     add(genCameraManual(collapseButton)).align(Align.topLeft);
     setBackgroundColor();
-    pad(1 * UiUtil.mm);
+    pad(UiUtil.sclmm);
   }
 
   /** この UI コンポーネントの背景色を設定する. */
@@ -64,8 +65,9 @@ public class CameraManualView extends VisTable {
   /** 視点の操作方法をの表示/非表示を切り替えるボタンを作成する. */
   private VisCheckBox genCollapseButton() {
     VisCheckBox collapseButton = new VisCheckBox("");
-    collapseButton.add(
-        UiUtil.createLabel(TextDefs.CameraManual.moveViewPoint.get(), 13.2f, Color.WHITE));
+    VisLabel label = UiUtil.createLabel(
+        TextDefs.CameraManual.moveViewPoint.get(), 13.2f * UiUtil.sclpt, Color.WHITE);
+    collapseButton.add(label);
     return collapseButton;
   }
 
@@ -73,7 +75,7 @@ public class CameraManualView extends VisTable {
   private CollapsibleWidget genCameraManual(VisCheckBox collapseButton) {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/povCtrl.png";
     VisImage manualImg =
-        UiUtil.createUiImage(imgPath, new Vector2(42.35f * UiUtil.mm, 53.57f * UiUtil.mm));
+        UiUtil.createUiImage(imgPath, new Vector2(42.35f * UiUtil.sclmm, 53.57f * UiUtil.sclmm));
     Table table = new Table();
     table.add(manualImg);
     CollapsibleWidget cw = new CollapsibleWidget(table);

@@ -66,6 +66,7 @@ public class UiComposer implements Disposable {
   /** UI を描画するビューポートのサイズを変更する. */
   public void updateViewPortSize(int width, int height) {
     stage.getViewport().update(width, height, true);
+    rhsRoot.setOrigin(width, height);
   }
 
   /** このオブジェクトが管理する UI に対する入力を処理するオブジェクトを返す. */
@@ -115,7 +116,7 @@ public class UiComposer implements Disposable {
   private Container<VisImage> genCrosshair() {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/sight.png";
     Container<VisImage> crosshair = new Container<VisImage>(
-        UiUtil.createUiImage(imgPath, new Vector2(5f * UiUtil.mm, 5f * UiUtil.mm)));
+        UiUtil.createUiImage(imgPath, new Vector2(5f * UiUtil.sclmm, 5f * UiUtil.sclmm)));
     crosshair.setFillParent(true);
     return crosshair;
   }
