@@ -43,7 +43,9 @@ import java.util.HashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.seapanda.bunnyhop.simulator.BhSimulator;
+import net.seapanda.bunnyhop.simulator.common.TextDefs;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * {@link RaspiCar} をコントロールする UI コンポーネントを持つ View.
@@ -62,14 +64,14 @@ public class RaspiCarCtrlView extends VisTable {
   /** 目を選択する UI コンポーネント. */
   private VisSelectBox<EyeToSetFunc> eyeSelector;
   private final HashMap<Color, String> colorToName = new HashMap<>() { {
-      put(Color.BLACK, "くろ");
-      put(Color.RED, "あか");
-      put(Color.GREEN, "みどり");
-      put(Color.BLUE, "あお");
-      put(Color.MAGENTA, "むらさき");
-      put(Color.CYAN, "みずいろ");
-      put(Color.YELLOW, "きいろ");
-      put(Color.WHITE, "しろ");
+      put(Color.BLACK, TextDefs.ObjCtrl.Color.black.get());
+      put(Color.RED, TextDefs.ObjCtrl.Color.red.get());
+      put(Color.GREEN, TextDefs.ObjCtrl.Color.green.get());
+      put(Color.BLUE, TextDefs.ObjCtrl.Color.blue.get());
+      put(Color.MAGENTA, TextDefs.ObjCtrl.Color.magenta.get());
+      put(Color.CYAN, TextDefs.ObjCtrl.Color.cyan.get());
+      put(Color.YELLOW, TextDefs.ObjCtrl.Color.yellow.get());
+      put(Color.WHITE, TextDefs.ObjCtrl.Color.white.get());
     } };
 
   /**
@@ -127,7 +129,7 @@ public class RaspiCarCtrlView extends VisTable {
     movePane.<VisImageButton>add(button);
     // RaspiCar 画像
     String imgPath = BhSimulator.ASSET_PATH + "/Images/" + "raspicarMove.png";
-    var size = new Vector2(30 * UiUtil.mm, 26.4f * UiUtil.mm);
+    var size = new Vector2(25 * UiUtil.mm, 22f * UiUtil.mm);
     VisImage image = UiUtil.createUiImage(imgPath, size);
     movePane.<VisImage>add(image).space(0.5f * UiUtil.mm);
     // 右回転
@@ -181,9 +183,10 @@ public class RaspiCarCtrlView extends VisTable {
 
   /** 移動速度選択コンポーネントを追加する. */
   private void addSpeedLevelSelector() {
-    this.<VisLabel>add(UiUtil.createLabel("移動速度", 15, Color.WHITE));
+    var label = UiUtil.createLabel(TextDefs.ObjCtrl.RaspiCar.moveSpeed.get(), 13.2f, Color.WHITE);
+    this.<VisLabel>add(label);
     var intModel = new IntSpinnerModel(speedLevel, 1, 10);
-    var speedSel = new Spinner("", intModel);    
+    var speedSel = new Spinner("", intModel);
     speedSel.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
@@ -195,7 +198,8 @@ public class RaspiCarCtrlView extends VisTable {
 
   /** 移動時間選択コンポーネントを追加する. */
   private void addMoveTimeSelector() {
-    this.<VisLabel>add(UiUtil.createLabel("移動時間", 15, Color.WHITE));
+    var label = UiUtil.createLabel(TextDefs.ObjCtrl.RaspiCar.moveTime.get(), 13.2f, Color.WHITE);
+    this.<VisLabel>add(label);
     var floatModel = new SimpleFloatSpinnerModel(moveTime, 0.5f, 10f, 0.5f);
     var moveTimeSel = new Spinner("", floatModel);
     moveTimeSel.addListener(new ChangeListener() {
@@ -212,6 +216,7 @@ public class RaspiCarCtrlView extends VisTable {
     VisTextField textField = new VisTextField("");
     textField.setDisabled(true);
     VisTextFieldStyle style = textField.getStyle();
+    style.font = UiUtil.createFont("0123456789. cm", 13.2f, Color.WHITE);
     style.disabledFontColor = Color.WHITE;
     textField.setStyle(style);
 
@@ -247,12 +252,17 @@ public class RaspiCarCtrlView extends VisTable {
 
   private void addEyeSelector() {
     eyeSelector = new VisSelectBox<EyeToSetFunc>();
+    String[] eyeNames = {
+        TextDefs.ObjCtrl.RaspiCar.bothEyes.get(),
+        TextDefs.ObjCtrl.RaspiCar.rightEye.get(),
+        TextDefs.ObjCtrl.RaspiCar.leftEye.get(),
+    };
     eyeSelector.setItems(
-      new EyeToSetFunc("両目", model::setBothEyesColor),
-      new EyeToSetFunc("右目", model::setRightEyeColor),
-      new EyeToSetFunc("左目", model::setLeftEyeColor));
+      new EyeToSetFunc(eyeNames[0], model::setBothEyesColor),
+      new EyeToSetFunc(eyeNames[1], model::setRightEyeColor),
+      new EyeToSetFunc(eyeNames[2], model::setLeftEyeColor));
     var style = new SelectBoxStyle(eyeSelector.getStyle());
-    style.font = UiUtil.createFont("両右左目", 15, Color.WHITE);
+    style.font = UiUtil.createFont(StringUtils.join(eyeNames), 13.2f, Color.WHITE);
     style.listStyle.font = style.font;
     eyeSelector.setStyle(style);
     this.add(eyeSelector).space(2f * UiUtil.mm);
@@ -306,7 +316,8 @@ public class RaspiCarCtrlView extends VisTable {
     textField.setDisabled(true);
     var style = new VisTextFieldStyle(textField.getStyle());
     style.disabledFontColor = Color.WHITE;
-    style.font = UiUtil.createFont("あいおかきくさしずどみむらりろ黒赤青緑黄紫水白色", 15, Color.WHITE);
+    String colorChars = StringUtils.join(colorToName.values().toArray(new String[0]));
+    style.font = UiUtil.createFont(colorChars, 13.2f, Color.WHITE);
     textField.setStyle(style);
 
     ChangeListener listener = new ChangeListener() {

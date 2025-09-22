@@ -20,6 +20,16 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowAdapter;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import net.seapanda.bunnyhop.simulator.common.BhSimConstants;
+import net.seapanda.bunnyhop.simulator.common.BhSimSettings;
+import net.seapanda.bunnyhop.simulator.common.TextDefs;
+import net.seapanda.bunnyhop.utility.Utility;
+import net.seapanda.bunnyhop.utility.textdb.JsonTextDatabase;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -45,9 +55,11 @@ public class App {
       return;
     }
     if (cmd.hasOption("version")) {
-      System.out.println(BhConstants.APP_VERSION.toString());
+      System.out.println(BhSimConstants.APP_VERSION.toString());
       return;
     }
+
+    buildTextDb();
 
     Lwjgl3WindowListener windowListener = new Lwjgl3WindowAdapter() {
       @Override
@@ -84,5 +96,16 @@ public class App {
       System.err.println(msg);
     }
     return cmd;
+  }
+
+  /** テキストデータをファイルから読み込んで, {@link TextDefs} 経由でアクセス出来るようにする. */
+  private static void buildTextDb() throws IOException, JsonIOException, JsonSyntaxException {
+    Path textDbFile = Paths.get(
+        Utility.execPath,
+        BhSimConstants.Path.Dir.LANGUAGE,
+        BhSimSettings.language,
+        BhSimConstants.Path.File.LANGUAGE_FILE);
+    final var textDb = new JsonTextDatabase(textDbFile);
+    TextDefs.setTextDatabase(textDb);
   }
 }

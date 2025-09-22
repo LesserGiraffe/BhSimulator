@@ -54,7 +54,7 @@ public class SimulationObjectManagerView extends VisTable {
   private void addLabel() {
     labelOfNumObjects = this.add("").getActor();
     LabelStyle style = new LabelStyle(labelOfNumObjects.getStyle());
-    style.font = UiUtil.createFont(" 0123456789/", 17, Color.WHITE);
+    style.font = UiUtil.createFont(" 0123456789/", 15, Color.WHITE);
     labelOfNumObjects.setStyle(style);
   }
 

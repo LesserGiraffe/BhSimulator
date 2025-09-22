@@ -32,6 +32,7 @@ import com.kotcrab.vis.ui.widget.VisCheckBox;
 import com.kotcrab.vis.ui.widget.VisImage;
 import com.kotcrab.vis.ui.widget.VisTable;
 import net.seapanda.bunnyhop.simulator.BhSimulator;
+import net.seapanda.bunnyhop.simulator.common.TextDefs;
 
 /**
  * 視点の操作方法を表示する UI コンポーネントを持つ View.
@@ -64,7 +65,7 @@ public class CameraManualView extends VisTable {
   private VisCheckBox genCollapseButton() {
     VisCheckBox collapseButton = new VisCheckBox("");
     collapseButton.add(
-        UiUtil.createLabel("視点の移動", (int) (4 * UiUtil.mm), Color.WHITE));
+        UiUtil.createLabel(TextDefs.CameraManual.moveViewPoint.get(), 13.2f, Color.WHITE));
     return collapseButton;
   }
 

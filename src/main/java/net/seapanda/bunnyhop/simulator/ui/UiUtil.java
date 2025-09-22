@@ -23,7 +23,11 @@ import net.seapanda.bunnyhop.simulator.BhSimulator;
  */
 public class UiUtil {
 
+  public static VisImageButton button;
+
+  public static final float dpi = Gdx.graphics.getDensity() * 160f;
   public static final float mm = Gdx.graphics.getDensity() * 160f / 25.4f;
+  public static final float ptScale = Gdx.graphics.getDensity() * 160f / 72f;
   private static String fontPath = BhSimulator.ASSET_PATH + "/Images/GenShinGothic-Normal.ttf";
   private static FreeTypeFontGenerator fontGenerator = 
       new FreeTypeFontGenerator(Gdx.files.absolute(fontPath));
@@ -37,6 +41,7 @@ public class UiUtil {
     var btn = new VisImageButton(drawable, drawable);
     btn.addListener(listener);
     btn.pad(pad);
+    button = btn;
     return btn;
   }
 
@@ -49,7 +54,7 @@ public class UiUtil {
   }
 
   /** UI 部品のテキストラベルを作成する. */
-  public static VisLabel createLabel(String text, int fontSize, Color textColor) {
+  public static VisLabel createLabel(String text, float fontSize, Color textColor) {
     var label = new VisLabel(text);
     var style = new LabelStyle(label.getStyle());
     style.font = createFont(text, fontSize, textColor);
@@ -58,15 +63,20 @@ public class UiUtil {
   }
 
   /** UI 部品のフォントを作成する. */
-  public static BitmapFont createFont(String text, int fontSize, Color textColor) {
+  public static BitmapFont createFont(String text, float fontSize, Color textColor) {
     var parameter = new FreeTypeFontParameter();
     parameter.characters = text;
-    parameter.size = fontSize;
+    parameter.size = toScaledPt(fontSize);
     parameter.color = textColor;
     return fontGenerator.generateFont(parameter);
   }
 
   public static void dispose() {
     fontGenerator.dispose();
+  }
+
+  /** ポイント数 {@code pt} を画面の解像度を考慮したポイントに直す. */
+  private static int toScaledPt(float pt) {
+    return Math.round(ptScale * pt);
   }
 }

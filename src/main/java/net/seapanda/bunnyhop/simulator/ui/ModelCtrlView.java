@@ -80,10 +80,10 @@ public class ModelCtrlView extends VerticalGroup {
     table.top().right();
     table.pad(2 * UiUtil.mm);
     setBackgroundColorTo(table, viewOfSelectedModel);
-    table.<VisImageButton>add(gencreateBoxButton(accessor, false)).space(2 * UiUtil.mm);
-    table.<VisImageButton>add(gencreateBoxButton(accessor, true)).space(2 * UiUtil.mm);
+    table.<VisImageButton>add(createBoxButton(accessor, false)).space(2 * UiUtil.mm);
+    table.<VisImageButton>add(createBoxButton(accessor, true)).space(2 * UiUtil.mm);
     table.row();
-    table.<VisImageButton>add(genCreateLampButton(accessor)).space(2 * UiUtil.mm);
+    table.<VisImageButton>add(createLampButton(accessor)).space(2 * UiUtil.mm);
     table.<VisImageButton>add(genDeleteButton(accessor)).space(2 * UiUtil.mm);
     table.row();
     table.addListener(event -> true);
@@ -105,14 +105,14 @@ public class ModelCtrlView extends VerticalGroup {
   /** オブジェクトを削除するボタンを作成する. */
   private VisImageButton genDeleteButton(CustomInputProcessor.AccessHelper accessor) {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/closedTrashbox.png";
-    var size = new Vector2(9 * UiUtil.mm, 16 * UiUtil.mm);
+    var size = new Vector2(11 * UiUtil.mm, 16 * UiUtil.mm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         accessor.fnDeleteSelectedObjects.run();
       }
     };
-    return UiUtil.createUiButton(imgPath, size, UiUtil.mm, listener);
+    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.mm, listener);
   }
 
   /**
@@ -120,22 +120,22 @@ public class ModelCtrlView extends VerticalGroup {
    *
    * @param isHeavy 重い箱を作成するボタンを作る場合 true
    */
-  private VisImageButton gencreateBoxButton(
+  private VisImageButton createBoxButton(
       CustomInputProcessor.AccessHelper accessor, boolean isHeavy) {
     String iconName = isHeavy ? "/Images/heavyBox.png" : "/Images/dice.png";
     String imgPath = BhSimulator.ASSET_PATH + iconName;
-    var size = new Vector2(15.26f * UiUtil.mm, 16.5f * UiUtil.mm);
+    var size = new Vector2(12 * UiUtil.mm, 12.5f * UiUtil.mm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         accessor.fnCreateBox.accept(isHeavy);
       }
     };
-    return UiUtil.createUiButton(imgPath, size, UiUtil.mm, listener);
+    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.mm, listener);
   }
 
   /** ランプを作成するボタンを作成する. */
-  private VisImageButton genCreateLampButton(CustomInputProcessor.AccessHelper accessor) {
+  private VisImageButton createLampButton(CustomInputProcessor.AccessHelper accessor) {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/lamp.png";
     var size = new Vector2(12 * UiUtil.mm, 12 * UiUtil.mm);
     ChangeListener listener = new ChangeListener() {
@@ -144,7 +144,7 @@ public class ModelCtrlView extends VerticalGroup {
         accessor.fnCreateLamp.run();
       }
     };
-    return UiUtil.createUiButton(imgPath, size, UiUtil.mm, listener);
+    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.mm, listener);
   }
 
   @Override
