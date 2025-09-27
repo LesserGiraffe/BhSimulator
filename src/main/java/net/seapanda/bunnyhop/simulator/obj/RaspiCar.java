@@ -533,7 +533,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   private void setVelocity(float speed, float deltaTime) {
     float[] elems = body.getWorldTransform().getValues();
     // 摩擦力で減速する分の補正量 (接触するもう一方のオブジェクトの摩擦力を考慮していない適当な式であることに注意)
-    float correction = 0.399f * (deltaTime * friction * 9.8f) * Math.signum(speed);
+    float correction = 0.37f * (deltaTime * friction * 9.8f) * Math.signum(speed);
     var targetVelocity =
         new Vector3(-elems[Matrix4.M02], -elems[Matrix4.M12], -elems[Matrix4.M22])
         .scl(speed + correction);
@@ -562,7 +562,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     float frictionTorque = radius * mass * 9.8f * spinningFriction;
     float invInertia = body.getInvInertiaDiagLocal().y;
     // 摩擦力で減速する分の補正量 (接触するもう一方のオブジェクトの摩擦力を考慮していない適当な式であることに注意)
-    float correction = 8.15f * frictionTorque * invInertia * deltaTime * Math.signum(rotSpeed);
+    float correction = 7.54f * frictionTorque * invInertia * deltaTime * Math.signum(rotSpeed);
     float[] elems = body.getWorldTransform().getValues();
     var targetAngularVelocity =
         new Vector3(elems[Matrix4.M01], elems[Matrix4.M11], elems[Matrix4.M21])

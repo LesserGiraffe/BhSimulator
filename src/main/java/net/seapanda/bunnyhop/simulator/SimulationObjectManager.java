@@ -73,10 +73,10 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
   /**
    * 次の物理シミュレーションの更新で経過する時間を計算するためのオブジェクト.
    *
-   * <p>Box の AdditionalDamping を有効にしているので, シミュレーション間隔を 1 / 90 秒から減らさないこと.
+   * <p>Box と Lamp の AdditionalDamping を有効にしているので, シミュレーション間隔を 1 / 120 秒から減らさないこと.
    */
   private final SimulationStepTimeCalculator simStepTimeCalc =
-      new SimulationStepTimeCalculator(1f / 90f, 5);
+      new SimulationStepTimeCalculator(1f / 120f, 5);
 
   /** コンストラクタ. */
   public SimulationObjectManager() {

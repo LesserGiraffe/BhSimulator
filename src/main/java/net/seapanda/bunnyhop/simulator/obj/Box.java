@@ -105,6 +105,7 @@ public class Box
     }
     var info = new btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
     info.setAdditionalDamping(true);
+    info.setAdditionalLinearDampingThresholdSqr(5e-3f);
     var rigidBody = new btRigidBody(info);
     info.dispose();
     rigidBody.setCollisionFlags(
