@@ -16,10 +16,10 @@ public abstract class Collidable implements SimulationObject {
   protected final HashMap<btPersistentManifold, CollisionObjPair> manifoldToCollisionPair = 
       new HashMap<>();
 
-  /** 引数で指定した {@link btDynamicWorld} オブジェクトに, この 3D モデルが持つ衝突判定オブジェクトを追加する. */
+  /** 引数で指定した {@link btDynamicsWorld} オブジェクトに, この 3D モデルが持つ衝突判定オブジェクトを追加する. */
   public abstract void addCollisionObjectsTo(btDynamicsWorld world);
 
-  /** 引数で指定した {@link btDynamicWorld} オブジェクトに, この 3D モデルが持つ衝突判定オブジェクトを追加する. */
+  /** 引数で指定した {@link btDynamicsWorld} オブジェクトに, この 3D モデルが持つ衝突判定オブジェクトを追加する. */
   public abstract void removeCollisionObjectsFrom(btDynamicsWorld world);
 
   /** この 3D モデルをマウスドラッグで移動可能な場合 true を返す. */

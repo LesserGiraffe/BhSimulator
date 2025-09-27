@@ -57,21 +57,26 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
   /** シミュレーション空間に存在する 3D モデルを格納するリスト. */
   private final ArrayList<SimulationObject> instances = new ArrayList<>();
   private final Stage stage = new Stage(1f, new Vector3(0f, 0f, 0f));
-  private final RaspiCar car = new RaspiCar(0.2f, new Vector3(0f, 1.5f, 3f));
+  private final RaspiCar car = new RaspiCar(1f / 67f, new Vector3(0f, 0.3f, 0.3f));
   private final RayTestHelper rayTestHelper;
-  /** 衝突時の処理が定義されたクラスのオブジェクト. */
-  private CustomContactListener contactListener;
-  private btDiscreteDynamicsWorld dynamicsWorld;
-  private ArrayList<Disposable> disposables = new ArrayList<>();
+  private final btDiscreteDynamicsWorld dynamicsWorld;
+  private final ArrayList<Disposable> disposables = new ArrayList<>();
   private final DebugDrawer debugDrawer = new DebugDrawer();
   /** オブジェクトがステージから落ちたと判断する鉛直方向の位置の閾値. */
-  private final float verticalPosThreshold = -25f;
+  private final float verticalPosThreshold = -10f;
   /** カメラの注視点を取得する関数のオブジェクト. */
   private Supplier<Vector3> cameraTargetGetter = () -> new Vector3(0f, 3f, 0f);
   /** シミュレーション空間に, 現在追加されている 3D モデルの個数. */
   private int numObjects = 0;
   /** UI のルートコンポーネント. */
   private final Actor uiComponent = new SimulationObjectManagerView(this);
+  /**
+   * 次の物理シミュレーションの更新で経過する時間を計算するためのオブジェクト.
+   *
+   * <p>Box の AdditionalDamping を有効にしているので, シミュレーション間隔を 1 / 90 秒から減らさないこと.
+   */
+  private final SimulationStepTimeCalculator simStepTimeCalc =
+      new SimulationStepTimeCalculator(1f / 90f, 5);
 
   /** コンストラクタ. */
   public SimulationObjectManager() {
@@ -86,13 +91,12 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
   private btDiscreteDynamicsWorld createDynamicWorld() {
     var collisionConfig = new btDefaultCollisionConfiguration();
     var dispatcher = new btCollisionDispatcher(collisionConfig);
-    
     var broadphase = new btDbvtBroadphase();
     var constraintSolver = new btSequentialImpulseConstraintSolver();
     var dynamicsWorld = new btDiscreteDynamicsWorld(
         dispatcher, broadphase, constraintSolver, collisionConfig);
     dynamicsWorld.setGravity(new Vector3(0, -9.8f, 0));
-    contactListener = new CustomContactListener();
+    var contactListener = new CustomContactListener();
     dynamicsWorld.setDebugDrawer(debugDrawer);
     debugDrawer.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE);
     disposables.add(contactListener);
@@ -117,12 +121,14 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
   /** シミュレーション空間の 3D モデルの状態を更新する. */
   public void update(float deltaTime) {
     teleportObjectsDroppedOutOfStage();
-    car.update(deltaTime);
-    dynamicsWorld.stepSimulation(deltaTime, 5, 1f / 60f);
+    simStepTimeCalc.advanceTime(deltaTime);
+    car.update(deltaTime, simStepTimeCalc.getNextTimeStep());
+    // Box の AdditionalDamping を有効にしているので, シミュレーション間隔を 1 / 90 秒から減らさないこと.
+    dynamicsWorld.stepSimulation(deltaTime, simStepTimeCalc.maxSteps, simStepTimeCalc.timeStep);
   }
 
   /** シミュレーション空間の 3D モデルを描画するためのインタフェースを取得する. */
-  public Iterable<? extends RenderableProvider> getRendarableProviders() {
+  public Iterable<? extends RenderableProvider> getRenderableProviders() {
     return instances;
   }
 
@@ -138,7 +144,8 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
     if (numObjects == MAX_OBJECTS) {
       throw new MaxObjectsExceededException("No more 3D models can be added.");
     }
-    var box = new Box(new Vector3(2, 2, 2), pos, isHeavy);
+    float size = isHeavy ? 0.2f : 0.1f;
+    var box = new Box(new Vector3(size, size, size), pos, isHeavy);
     instances.add(box);
     box.addCollisionObjectsTo(dynamicsWorld);
     ++numObjects;
@@ -156,7 +163,7 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
     if (numObjects == MAX_OBJECTS) {
       throw new MaxObjectsExceededException("No more 3D models can be added.");
     }
-    var lamp = new Lamp(1.6f, pos);
+    var lamp = new Lamp(1f, pos);
     instances.add(lamp);
     lamp.addCollisionObjectsTo(dynamicsWorld);
     ++numObjects;
@@ -209,7 +216,7 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
         pe.resetPhysicalState();
       }
       Vector3 newObjPos = cameraTargetGetter.get();
-      newObjPos.y = 3f;
+      newObjPos.y = 1f;
       stage.clampPosXz(newObjPos);
       obj.setPosition(newObjPos);
     }
@@ -236,7 +243,7 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
   }
 
   /** 追加可能な 3D モデルの最大個数を超えたときに投げられる例外. */
-  static class MaxObjectsExceededException extends LimitExceededException {
+  public  static class MaxObjectsExceededException extends LimitExceededException {
     public MaxObjectsExceededException(String msg) {
       super(msg);
     }

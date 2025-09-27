@@ -51,7 +51,7 @@ import net.seapanda.bunnyhop.simulator.obj.interfaces.Collidable;
 public class Stage extends Collidable {
  
   private final btRigidBody body;
-  private SceneAsset sceneAsset = new GLBLoader().load(
+  private final SceneAsset sceneAsset = new GLBLoader().load(
       Gdx.files.absolute(BhSimulator.ASSET_PATH + "/Models/Stage.glb"));
   private final Scene scene;
   private final Vector3 pos;
@@ -109,7 +109,7 @@ public class Stage extends Collidable {
         rigidBody.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_STATIC_OBJECT);
     rigidBody.setActivationState(Collision.DISABLE_DEACTIVATION);
     rigidBody.userData = this;
-    rigidBody.setFriction(1.5f);
+    rigidBody.setFriction(0.5f);
     return rigidBody;
   }
 

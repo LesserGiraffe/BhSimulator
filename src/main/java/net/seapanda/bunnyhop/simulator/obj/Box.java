@@ -54,18 +54,18 @@ import org.apache.commons.lang3.mutable.MutableInt;
 public class Box
     extends PhysicalEntity implements ObjectReflectionProvider, UiViewProvider {
   
-  private Scene scene;
+  private final Scene scene;
   private final btRigidBody body;
   /** この 3D モデルのリソースを共有する {@link ObjectReflection} オブジェクトの個数. */
   private final MutableInt numShared = new MutableInt(0);
-  private Vector3 size;
+  private final Vector3 size;
   /** 選択状態を保持するフラグ. */
   private boolean isSelected = false;
   /** 選択されたときの色. */
   private final Attribute colorAttrOnSelected = 
       ColorAttribute.createEmissive(new Color(0.2f, 0.2f, 0.2f, 1.0f));
   /** UI のルートコンポーネント. */
-  private VisTable uiComponent;
+  private final VisTable uiComponent;
 
   /**
    * コンストラクタ.
@@ -78,7 +78,7 @@ public class Box
     this.size = size;
     scene = createScene(size, pos, isHeavy);
     var motionState = new CustomMotionState(scene.modelInstance.transform);
-    btCollisionShape shape = new btBoxShape(new Vector3(size).scl(0.5f));
+    var shape = new btBoxShape(new Vector3(size).scl(0.5f));
     body = createRigidBody(shape, motionState, isHeavy);
     uiComponent = new MovableBoxCtrlView(this);
   }
@@ -99,17 +99,21 @@ public class Box
   private btRigidBody createRigidBody(
         btCollisionShape shape, btMotionState motionState, boolean isHeavy) {
     var localInertia = new Vector3();
-    var mass = isHeavy ? 500 : 0.5f;
+    var mass = isHeavy ? 20 : 0.1f;
     if (!isHeavy) {
       shape.calculateLocalInertia(mass, localInertia);
     }
-    var rigidBody = new btRigidBody(mass, motionState, shape, localInertia.scl(2f));
+    var info = new btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
+    info.setAdditionalDamping(true);
+    var rigidBody = new btRigidBody(info);
+    info.dispose();
     rigidBody.setCollisionFlags(
         rigidBody.getCollisionFlags()
         | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
     rigidBody.setActivationState(Collision.DISABLE_DEACTIVATION);
-    rigidBody.setFriction(1f);
+    rigidBody.setFriction(0.5f);
     rigidBody.userData = this;
+    rigidBody.setDamping(0f, 0.9995f);
     return rigidBody;
   }
 

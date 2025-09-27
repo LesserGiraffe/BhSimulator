@@ -34,6 +34,7 @@ import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
+import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionWorld;
@@ -81,22 +82,29 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 色センサ部分の衝突判定オブジェクト. */
   private final btGhostObject colorSensorCollisionObj;
   /** 距離センサのビームを描画するためのオブジェクト. */
-  private ModelInstance sensorBeam;
+  private final ModelInstance sensorBeam;
   /** 3D モデルの長さ / 実物の長さ. */
-  private float modelScale = 67;
+  private final float modelScale = 67;
   /** 描画時のスケール. */
   private final float scale;
-  /** ローカル空間上でのこのオブジェクトの論理的な原点. */
-  private Vector3 logicalOrigin = new Vector3(0f, -1.3f, 0f);
-  // private Vector3 logicalOrigin = new Vector3(0, 0, 0);
+  /** 3D モデルが定義された空間におけるこのオブジェクトの論理的な原点. */
+  private final Vector3 logicalOrigin = new Vector3(0f, -1.3f, 0f);
   /** 実際の距離センサの最大測定距離 (m) . */
   private final float maxMeasurableDistance = 3f;
   /** 3D モデルが定義された空間における距離センサのビームの始点. */
   private final Vector3 beamStartPos = new Vector3(0, 0.93f, -3.634f);
   /** 3D モデルが定義された空間における距離センサのビームの終点. */
   private final Vector3 beamEndPos = new Vector3();
-  private List<AnimationController> rhsAnimCtrls = new ArrayList<>();
-  private List<AnimationController> lhsAnimCtrls = new ArrayList<>();
+  private final List<AnimationController> rhsAnimCtrls = new ArrayList<>();
+  private final List<AnimationController> lhsAnimCtrls = new ArrayList<>();
+  /** 質量. (kg) */
+  private final float mass = 0.5f;
+  /** 摩擦係数. */
+  private final float friction = 0.5f;
+  /** 回転運動に作用する摩擦係数. */
+  private final float spinningFriction = 0.04f;
+  /** 底面の半径. */
+  private float radius;
   /** 現在の動作. */
   private Motion motion = Motion.IDLE;
   /** 1 つ前の物理シミュレーションステップの動作. */
@@ -121,21 +129,21 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** この 3D モデルの衝突判定オブジェクトを保持する {@link btCollisionWorld} オブジェクト. */
   private btCollisionWorld world;
   /** 前の物理シミュレーションステップで回転動作で生じた角速度. */
-  private Vector3 prevAngularVelocity = new Vector3(0f, 0f, 0f);
+  private final Vector3 prevAngularVelocity = new Vector3(0f, 0f, 0f);
   /** 前の物理シミュレーションステップで前進, 後退動作で生じた速度. */
-  private Vector3 prevVelocity = new Vector3(0f, 0f, 0f);
+  private final Vector3 prevVelocity = new Vector3(0f, 0f, 0f);
   /** 右目の初期色. */
-  public final Color defaultRightEyeColor;
+  private final Color defaultRightEyeColor;
   /** 左目の初期色. */
-  public final Color defaultLeftEyeColor;
+  private final Color defaultLeftEyeColor;
   /** UI のルートコンポーネント. */
-  private RaspiCarCtrlView uiComponent;
+  private final RaspiCarCtrlView uiComponent;
 
   /**
    * コンストラクタ.
    *
-   * @param scale 直方体のサイズ
-   * @param pos 直方体の底面の中心点の位置
+   * @param scale RaspiCar のサイズ
+   * @param pos RaspiCar の底面の中心点の位置
    */
   public RaspiCar(float scale, Vector3 pos) {
     this.scale = scale;
@@ -144,9 +152,9 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     CustomMotionState motionState = new CustomMotionState(scene.modelInstance.transform);
     body = createRigidBody(shape, motionState);
     sensorBeam = createSensorBeam(scene.modelInstance.transform);
-    caterpillarCollisionObj = createCollisionObject(
-        scene.modelInstance, "caterpillar-collision-L", "caterpillar-collision-R");
-    colorSensorCollisionObj = createCollisionObject(scene.modelInstance, "color-sensor-collision");
+    caterpillarCollisionObj =
+        createCollisionObject("caterpillar-collision-L", "caterpillar-collision-R");
+    colorSensorCollisionObj = createCollisionObject("color-sensor-collision");
     motionState.addOnWorldTransform(caterpillarCollisionObj::setWorldTransform);
     motionState.addOnWorldTransform(colorSensorCollisionObj::setWorldTransform);
     createAnimDescs();
@@ -158,11 +166,12 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 
    * モデルが持つ姿勢および物理量を更新する.
    *
-   * @param deltaTime 経過時間 (秒)
+   * @param deltaTime 前回このメソッドが呼ばれてからの経過時間 (秒)
+   * @param timeStep 次の物理シミュレーションで進む時間 (秒)
    */
-  public void update(float deltaTime) {
+  public void update(float deltaTime, float timeStep) {
     updateAnimation(deltaTime);
-    updatePhysicalState(deltaTime);
+    updatePhysicalState(timeStep);
     if (timeLeft <= 0) {
       switchMotion(Motion.IDLE, null);
     } else {
@@ -197,40 +206,6 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     }
   }
 
-  /**
-   * 前進, 後退, 右回転, 左回転 の何れかの動作から別の動作に移る場合に, 前の動作によって生じた速度を打ち消す.
-   * 摩擦力を大きくすると直進しにくくなるので, 摩擦力を大きくせずに静止力を高めるために導入する.
-   */
-  private void brake() {
-    boolean isTurning = (motion == Motion.TURN_LEFT) || (motion == Motion.TURN_RIGHT);
-    boolean isTurningPrev = (prevMotion == Motion.TURN_LEFT) || (prevMotion == Motion.TURN_RIGHT);
-    if (isTurningPrev && !isTurning) {
-      Vector3 currentAngularVelocity = body.getAngularVelocity();
-      float dot = prevAngularVelocity.dot(currentAngularVelocity);
-      float len = prevAngularVelocity.len2();
-      if (dot < len) {
-        prevAngularVelocity.scl(dot / len);
-      }
-      body.setAngularVelocity(currentAngularVelocity.sub(prevAngularVelocity));
-      prevAngularVelocity.set(0f, 0f, 0f);
-    }
-
-    boolean isMovingStraight =
-        (motion == Motion.MOVE_FORWARD) || (motion == Motion.MOVE_BACKWARD);
-    boolean isMovingStraightPrev =
-        (prevMotion == Motion.MOVE_FORWARD) || (prevMotion == Motion.MOVE_BACKWARD);
-    if (isMovingStraightPrev && !isMovingStraight) {
-      Vector3 currentVelocity = body.getLinearVelocity();
-      float dot = prevVelocity.dot(currentVelocity);
-      float len = prevVelocity.len2();
-      if (dot < len) {
-        prevVelocity.scl(dot / len);
-      }
-      body.setLinearVelocity(currentVelocity.sub(prevVelocity));
-      prevVelocity.set(0f, 0f, 0f);
-    }
-  }
-
   private void updateInvInertiaDiagLocal(float mul) {
     Vector3 invInertia = body.getInvInertiaDiagLocal();
     invInertia.y *= mul;
@@ -238,7 +213,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   }
 
   /** 物理的な状態を更新する. */
-  private void updatePhysicalState(float deltaTime) {
+  private void updatePhysicalState(float timeStep) {
     boolean isOnGround = isOnGround();
     if (isOnGround != isOnGroundPrev) {
       // 接地時に Yaw 軸周りに回りにくくする.
@@ -250,11 +225,12 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       prevMotion = motion;
       return;
     }
-    brake();
-    if ((motion == Motion.MOVE_FORWARD) || (motion == Motion.MOVE_BACKWARD)) {
-      setVelocity(speed);
-    } else if ((motion == Motion.TURN_LEFT) || (motion == Motion.TURN_RIGHT)) {
-      setAngularVelocity(rotationSpeed);
+    if (timeStep > 0) {
+      if ((motion == Motion.MOVE_FORWARD) || (motion == Motion.MOVE_BACKWARD)) {
+        setVelocity(speed, timeStep);
+      } else if ((motion == Motion.TURN_LEFT) || (motion == Motion.TURN_RIGHT)) {
+        setAngularVelocity(rotationSpeed, timeStep);
+      }
     }
     prevMotion = motion;
   }
@@ -300,20 +276,26 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     List<Node> collisionNodes =
         GeoUtil.addCollisionBoxes(shape, modelInstance, "body-collision");
     collisionNodes.forEach(node -> node.parts.get(0).enabled = false);
+    var aabbMax = new Vector3();
+    var aabbMin = new Vector3();
+    var trans = new Matrix4();
+    shape.getAabb(trans, aabbMin, aabbMax);
+    radius = (float) Math.sqrt(aabbMax.x * aabbMax.x + aabbMax.z * aabbMax.z);
     return shape;
   }
 
   private btRigidBody createRigidBody(btCollisionShape shape, btMotionState motionState) {
     var localInertia = new Vector3();
-    var mass = 20.0f;
     shape.calculateLocalInertia(mass, localInertia);
     var rigidBody = new btRigidBody(mass, motionState, shape, localInertia);
     rigidBody.setCollisionFlags(
         rigidBody.getCollisionFlags()
         | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
     rigidBody.setActivationState(Collision.DISABLE_DEACTIVATION);
-    rigidBody.setFriction(0.5f);
+    rigidBody.setFriction(friction);
     rigidBody.userData = this;
+    rigidBody.setSpinningFriction(spinningFriction);
+    rigidBody.setRollingFriction(1e-10f);
     return rigidBody;
   }
 
@@ -338,13 +320,11 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
    * {@code collisionNodeNames} で指定した {@link Node} のバウンディングボックスを
    * 衝突範囲として持つ {@link btGhostObject} を作成する.
    */
-  private btGhostObject createCollisionObject(
-      ModelInstance modelInstance, String... collisionNodeNames) {
+  private btGhostObject createCollisionObject(String... collisionNodeNames) {
     var shape = new btCompoundShape();
     List<Node> collisionNodes = 
         GeoUtil.addCollisionBoxes(shape, scene.modelInstance, collisionNodeNames);
     collisionNodes.forEach(node -> node.parts.get(0).enabled = false);
-
     var ghostObj = new btGhostObject();
     ghostObj.setCollisionShape(shape);
     ghostObj.setCollisionFlags(
@@ -368,17 +348,19 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
 
   /** この 3D モデルが接地しているかチェックする. */
   public boolean isOnGround() {
-    boolean isCaterpillarCollilded = false;
+    boolean isCaterpillarCollided = false;
     for (CollisionObjPair pair : manifoldToCollisionPair.values()) {
       if (pair.obj0() == caterpillarCollisionObj && !(pair.obj1().userData instanceof Lamp)) {
-        isCaterpillarCollilded = true;
+        isCaterpillarCollided = true;
+        break;
       }
     }
-    return calcTiltAngle() <= (Math.PI / 4) && isCaterpillarCollilded;
+    return calcTiltAngle() <= (Math.PI / 4) && isCaterpillarCollided;
   }
 
   /** 色センサの値を取得する. */
   public Color detectColor() {
+    computeCollisionDetection(colorSensorCollisionObj);
     Color detectedColor = new Color(Color.BLACK);
     for (CollisionObjPair pair : manifoldToCollisionPair.values()) {
       if (pair.obj0() == colorSensorCollisionObj && (pair.obj1().userData instanceof Lamp lamp)) {
@@ -386,6 +368,18 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       }
     }
     return detectedColor;
+  }
+
+  /** 引数で指定した衝突判定オブジェクトの衝突判定を再計算する. */
+  private void computeCollisionDetection(btCollisionObject collisionObj) {
+    btBroadphaseProxy bp = collisionObj.getBroadphaseHandle();
+    if (bp == null) {
+      return;
+    }
+    world.getBroadphase()
+        .getOverlappingPairCache()
+        .cleanProxyFromPairs(bp, world.getDispatcher());
+    world.performDiscreteCollisionDetection();
   }
 
   /**
@@ -540,45 +534,62 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     final int caterpillarAnimLen = 192; // frames
     final int frameRate = 24; // frames / sec
     // キャタピラ 1 回転にかかる時間 [sec]
-    final float catepillerAnimTime = (float) caterpillarAnimLen / frameRate;
+    final float caterpillarAnimTime = (float) caterpillarAnimLen / frameRate;
     float speed = calcSpeed(speedLevel);
-    return catepillerAnimTime * speed / (caterpillarLen * scale);
+    return caterpillarAnimTime * speed / (caterpillarLen * scale);
   }
 
   /** モデルに速度を与える. */
-  private void setVelocity(float speed) {
+  private void setVelocity(float speed, float deltaTime) {
     float[] elems = body.getWorldTransform().getValues();
-    var motionVelocity = new Vector3(
-        -elems[Matrix4.M02], -elems[Matrix4.M12], -elems[Matrix4.M22]).scl(speed);
+    // 摩擦力で減速する分の補正量 (接触するもう一方のオブジェクトの摩擦力を考慮していない適当な式であることに注意)
+    float correction = 0.399f * (deltaTime * friction * 9.8f) * Math.signum(speed);
+    var targetVelocity =
+        new Vector3(-elems[Matrix4.M02], -elems[Matrix4.M12], -elems[Matrix4.M22])
+        .scl(speed + correction);
+
     Vector3 currentVelocity = body.getLinearVelocity();
-    float dot = prevVelocity.dot(currentVelocity);
-    float len = prevVelocity.len2();
-    // 設定した速度未満の場合は, 設定値に近づくように制御したい.
-    // 外力計算後の prevVelocity 方向の速度が, 設定した速度より小さければ, 現在の速度から引く分を小さくする.
-    if (dot < len) {
-      prevVelocity.scl(dot / len);
+    float dot = currentVelocity.dot(targetVelocity);
+    float targetLen = targetVelocity.len();
+    float targetLen2 = targetLen * targetLen;
+    var currentVelocityForTarget = new Vector3(targetVelocity).scl(dot / targetLen2);
+    // 現在の速度が, 進行方向の目標の速度より大きい場合, 速度を変化させない.
+    // 現在の速度が, 進行方向の目標の速度以下の場合, 足りない分だけ進行方向の速度を追加する.
+    if (targetLen > currentVelocity.len()) {
+      // 目標の速度と反対の速度を持っていた場合に余計に加速しないようにする.
+      if (dot > 0) {
+        targetVelocity.sub(currentVelocityForTarget);
+      }
+    } else {
+      targetVelocity.set(0, 0, 0);
     }
-    var velocity = currentVelocity.sub(prevVelocity).add(motionVelocity);
-    body.setLinearVelocity(velocity);
-    prevVelocity.set(motionVelocity);
+    body.setLinearVelocity(targetVelocity.add(currentVelocity));
   }
 
   /** モデルに角速度を与える. */
-  private void setAngularVelocity(float rotationSpeed) {
+  private void setAngularVelocity(float rotSpeed, float deltaTime) {
+    // friction の影響度が不明なので, 仮に spinningFriction の 1/20 としておく.
+    float frictionTorque = radius * mass * 9.8f * (spinningFriction + friction / 20f);
+    float invInertia = body.getInvInertiaDiagLocal().y;
+    // 摩擦力で減速する分の補正量 (接触するもう一方のオブジェクトの摩擦力を考慮していない適当な式であることに注意)
+    float correction = 5.7f * frictionTorque * invInertia * deltaTime * Math.signum(rotSpeed);
     float[] elems = body.getWorldTransform().getValues();
-    var motionAngularVelocity = new Vector3(
-        elems[Matrix4.M01], elems[Matrix4.M11], elems[Matrix4.M21]).scl(rotationSpeed);
-    
+    var targetAngularVelocity =
+        new Vector3(elems[Matrix4.M01], elems[Matrix4.M11], elems[Matrix4.M21])
+        .scl(rotSpeed + correction);
+
     Vector3 currentAngularVelocity = body.getAngularVelocity();
-    float dot = prevAngularVelocity.dot(currentAngularVelocity);
-    float len = prevAngularVelocity.len2();
-    if (dot < len) {
-      prevAngularVelocity.scl(dot / len);
+    float dot = currentAngularVelocity.dot(targetAngularVelocity);
+    float len = targetAngularVelocity.len2();
+    var currentAngularVelocityForTarget = new Vector3(targetAngularVelocity).scl(dot / len);
+    if (targetAngularVelocity.len() > currentAngularVelocity.len()) {
+      if (dot > 0) {
+        targetAngularVelocity.sub(currentAngularVelocityForTarget);
+      }
+    } else {
+      targetAngularVelocity.set(0, 0, 0);
     }
-    Vector3 angularVelocity = 
-        currentAngularVelocity.sub(prevAngularVelocity).add(motionAngularVelocity);
-    body.setAngularVelocity(angularVelocity);
-    prevAngularVelocity.set(motionAngularVelocity);
+    body.setAngularVelocity(targetAngularVelocity.add(currentAngularVelocity));
   }
 
   /** ローカル座標系の Y 軸とワールド座標系の Y 軸のなす角度 (radian) を求める. */
@@ -590,7 +601,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   }
 
   /** 
-   * この RaspiCar が持つ距離センサの値を取得する.
+   * この RaspiCar が持つ距離センサの値を取得する. (単位: meters)
    *
    * @return この RaspiCar が持つ距離センサの値
    */
@@ -600,15 +611,14 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     }
     var helper = new RayTestHelper(world);
     var mat = body.getWorldTransform();
-    var xfmredStartPos = new Vector3(beamStartPos).scl(scale).mul(mat);
-    var xfmredEndPos = new Vector3(beamEndPos).scl(scale).mul(mat);
+    var transformedStartPos = new Vector3(beamStartPos).scl(scale).mul(mat);
+    var transformedEndPos = new Vector3(beamEndPos).scl(scale).mul(mat);
     Optional<RayTestResult<Collidable>> result = helper.getIntersectedCollidable(
-        xfmredStartPos,
-        xfmredEndPos,
+        transformedStartPos,
+        transformedEndPos,
         CollisionGroup.PHYSICAL_ENTITY,
         CollisionGroup.STAGE);
-    return result.map(res -> res.pos().sub(xfmredStartPos).len()).orElse(0f)
-        * GeoUtil.SCALE_OF_MODEL;
+    return result.map(res -> res.pos().sub(transformedStartPos).len()).orElse(0f);
   }
 
   /** この RaspiCar の左目の色を取得する. */
@@ -632,11 +642,12 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 
    * この RaspiCar の左目の色を設定する.
    *
-   * @param color 設定する目の色.
+   * @param color 設定する目の色. (nullable)
+   *              null を指定するとデフォルトの色になる/
    */
   public void setLeftEyeColor(Color color) {
     if (color == null) {
-      return;
+      color = defaultLeftEyeColor;
     }
     Material material = scene.modelInstance.getMaterial("eye-L");
     material.set(ColorAttribute.createDiffuse(color));
@@ -645,11 +656,12 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 
    * この RaspiCar の右目の色を設定する.
    *
-   * @param color 設定する目の色.
+   * @param color 設定する目の色. (nullable)
+   *              null を指定するとデフォルトの色になる
    */
   public void setRightEyeColor(Color color) {
     if (color == null) {
-      return;
+      color = defaultRightEyeColor;
     }
     Material material = scene.modelInstance.getMaterial("eye-R");
     material.set(ColorAttribute.createDiffuse(color));

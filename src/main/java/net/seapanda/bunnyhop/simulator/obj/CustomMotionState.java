@@ -28,11 +28,11 @@ import java.util.function.Consumer;
  * @author K.Koike
  */
 class CustomMotionState extends btMotionState {
-  private Matrix4 transform;
+  private final Matrix4 transform;
   /** 衝突判定オブジェクトの姿勢と同期させる姿勢行列のリスト. */
-  private ArrayList<Consumer<Matrix4>> onSetWorldTransList = new ArrayList<>();
-  private Vector3 scale = new Vector3();
-  private Vector3 pos = new Vector3();
+  private final ArrayList<Consumer<Matrix4>> onSetWorldTransList = new ArrayList<>();
+  private final Vector3 scale = new Vector3();
+  private final Vector3 pos = new Vector3();
 
   public CustomMotionState(Matrix4 transform) {
     this.transform = transform;

@@ -163,7 +163,7 @@ class CustomCameraInputController extends CameraInputController {
   /** 引数で指定した位置が, カメラの注視点として正常な範囲にあるか調べる. 
    *
    * @param x 調べる位置の X 座標.
-   * @param y 調べる位置の Y 座標.
+   * @param z 調べる位置の z 座標.
    */
   private boolean isInValidTargetRange(float x, float z) {
     return (minPointOfGazeX <= x) && (x <= maxPointOfGazeX)

@@ -33,9 +33,6 @@ import java.util.List;
  */
 public class GeoUtil {
 
-  /** 実物の長さ (cm) / 3D モデルの長さ. */
-  public static final float SCALE_OF_MODEL = 7.4848f;
-
   /** 平面と直線の交点を求める. */
   public static Vector3 calcIntersectionOfPlaneAndLine(
       Vector3 planePos, Vector3 planeNormal, Vector3 linePos, Vector3 lineDirection) {
@@ -79,6 +76,7 @@ public class GeoUtil {
       size.set(bb.max).sub(bb.min).scl(scale).scl(0.5f);
       pos.set(bb.min).add(bb.max).scl(scale).scl(0.5f);
       var boxShape = new btBoxShape(size);
+      boxShape.setMargin(0);
       container.addChildShape(new Matrix4().setTranslation(pos), boxShape);
       nodes.add(node);
     }

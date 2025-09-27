@@ -73,7 +73,7 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
     }
   }
 
-  /** RasPiCar を移動させるコマンドを処理する. */
+  /** RaspiCar を移動させるコマンドを処理する. */
   private void move(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished) {
     String motion = cmd[1];
     BiConsumer<Motion, Motion> onMoveFinished =
@@ -119,13 +119,13 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
     });
   }  
 
-  /** RasPiCar の目を光らせるコマンドを処理する. */
+  /** RaspiCar の目を光らせるコマンドを処理する. */
   private void lightEye(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished) {
     String eye = cmd[1];
     int red = Integer.parseInt(cmd[2]);
     int green = Integer.parseInt(cmd[3]);
     int blue = Integer.parseInt(cmd[4]);
-    EyeColors eyeColors = getEyeColors(red, green, blue);
+    EyeColors eyeColors = toEyeColors(red, green, blue);
     
     if (eye.equals(Eye.LEFT.name)) {
       actions.add(() -> {
@@ -148,10 +148,10 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
     }
   }
 
-  /** 目の色を取得する. */
-  private EyeColors getEyeColors(int red, int green, int blue) {
-    Color left = raspiCar.defaultLeftEyeColor;
-    Color right = raspiCar.defaultRightEyeColor;
+  /** 引数の色を RaspiCar の目に設定可能な形式の色に変換する. */
+  private EyeColors toEyeColors(int red, int green, int blue) {
+    Color left = null;
+    Color right = null;
     if (!(red == -1 && green == -1 && blue == -1)) {
       left = new Color(red / 255f, green / 255f, blue / 255f, 1.0f);
       right = left;
@@ -162,9 +162,9 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   @Override
   public void halt() {
     actions.clear();
-    actions.add(() -> raspiCar.setLeftEyeColor(raspiCar.defaultLeftEyeColor));
-    actions.add(() -> raspiCar.setRightEyeColor(raspiCar.defaultRightEyeColor));
-    actions.add(() -> raspiCar.stopMoving());
+    actions.add(() -> raspiCar.setLeftEyeColor(null));
+    actions.add(() -> raspiCar.setRightEyeColor(null));
+    actions.add(raspiCar::stopMoving);
   }
 
   @Override

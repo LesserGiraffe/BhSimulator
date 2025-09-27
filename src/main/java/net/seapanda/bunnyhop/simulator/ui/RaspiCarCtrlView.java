@@ -225,15 +225,15 @@ public class RaspiCarCtrlView extends VisTable {
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        float distance = model.measureDistance();
+        float distance = model.measureDistance() * 100;
         textField.setText(new DecimalFormat("#.#").format(distance) + " cm");
       }
     };
     String imgPath = BhSimulator.ASSET_PATH + "/Images/ruler.png";
     VisImageButton btn = UiUtil.createUiButton(
-        imgPath, new Vector2(14f * UiUtil.sclmm, 8f * UiUtil.sclmm), 1f * UiUtil.sclmm, listener);
-    this.<VisImageButton>add(btn).space(2 * UiUtil.sclmm);
-    this.<VisTextField>add(textField).width(25 * UiUtil.sclmm);
+        imgPath, new Vector2(14f * UiUtil.sclmm, 8f * UiUtil.sclmm), UiUtil.sclmm, listener);
+    this.<VisImageButton>add(btn).space(2f * UiUtil.sclmm);
+    this.<VisTextField>add(textField).width(25f * UiUtil.sclmm);
   }
 
   /** 目の色を選択する UI コンポーネントを追加する. */
@@ -242,12 +242,12 @@ public class RaspiCarCtrlView extends VisTable {
     VisTable btnTable = new VisTable();
     Color[] colors = { Color.RED, Color.GREEN, Color.BLUE, Color.CYAN };
     for (var color : colors) {
-      btnTable.add(genLightColorButton(color)).space(1f * UiUtil.sclmm);
+      btnTable.add(genLightColorButton(color)).space(UiUtil.sclmm);
     }
     btnTable.row();
     colors = new Color[] { Color.MAGENTA, Color.YELLOW, Color.WHITE, Color.BLACK };
     for (var color : colors) {
-      btnTable.add(genLightColorButton(color)).space(1f * UiUtil.sclmm);
+      btnTable.add(genLightColorButton(color)).space(UiUtil.sclmm);
     }
     this.add(btnTable);
   }
@@ -313,7 +313,7 @@ public class RaspiCarCtrlView extends VisTable {
   }
 
   /** 色センサの値を取得する UI コンポーネントを追加する. */
-  public void addColorPicker() {
+  private void addColorPicker() {
     VisTextField textField = new VisTextField("");
     textField.setDisabled(true);
     var style = new VisTextFieldStyle(textField.getStyle());

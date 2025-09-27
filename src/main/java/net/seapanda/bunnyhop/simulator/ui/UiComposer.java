@@ -42,7 +42,7 @@ public class UiComposer implements Disposable {
   private final Stage stage = new Stage(new ScreenViewport());
   private final VisTable rhsRoot;
   private final VisTable lhsRoot;
-  
+
   /**
    * コンストラクタ.
    *
@@ -52,6 +52,7 @@ public class UiComposer implements Disposable {
   public UiComposer(Actor modelCtrlView, Actor numSimObjectsView) {
     rhsRoot = genRhsView(modelCtrlView);
     lhsRoot = genLhsView(numSimObjectsView);
+    stage.addActor(genFpsCounterView());
     stage.addActor(rhsRoot);
     stage.addActor(lhsRoot);
     stage.addActor(genCrosshair());
@@ -75,7 +76,7 @@ public class UiComposer implements Disposable {
   }
 
   /** 画面右側に表示するビューを作成する. */
-  private VisTable genRhsView(Actor view) {
+  private static VisTable genRhsView(Actor view) {
     var table = new VisTable();
     table.top().right();
     table.setFillParent(true);
@@ -83,7 +84,7 @@ public class UiComposer implements Disposable {
     return table;
   }
 
-  private VisScrollPane genScrollPane(Actor content) {
+  private static VisScrollPane genScrollPane(Actor content) {
     VisScrollPane scrollPane = new VisScrollPane(content);
     scrollPane.setFadeScrollBars(false);
     scrollPane.setTouchable(Touchable.childrenOnly);
@@ -104,21 +105,26 @@ public class UiComposer implements Disposable {
   }
 
   /** 画面左に表示するビューを作成する. */
-  private VisTable genLhsView(Actor view) {
+  private static VisTable genLhsView(Actor view) {
     var table = new VisTable();
     table.bottom().left();
     table.setFillParent(true);
     table.add(view).align(Align.topLeft);
-    stage.addActor(rhsRoot);
     return table;
   }
 
-  private Container<VisImage> genCrosshair() {
+  private static Container<VisImage> genCrosshair() {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/sight.png";
     Container<VisImage> crosshair = new Container<VisImage>(
         UiUtil.createUiImage(imgPath, new Vector2(5f * UiUtil.sclmm, 5f * UiUtil.sclmm)));
     crosshair.setFillParent(true);
     return crosshair;
+  }
+
+  private static FpsCounterView genFpsCounterView() {
+    var fpsCounterView = new FpsCounterView();
+    fpsCounterView.left().top().setFillParent(true);
+    return fpsCounterView;
   }
 
   @Override

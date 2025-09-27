@@ -86,7 +86,7 @@ public class BhSimulator implements ApplicationListener {
     environment = createEnvironment();
     cam = createCamera();
     var camCtrl = new CustomCameraInputController(
-        cam, 8f, 85f, -25f, 25f, -25f, 25f, 0.5f, 50f, 0.4f);
+        cam, 8f, 85f, -1.75f, 1.75f, -1.75f, 1.75f, 0.1f, 3.5f, 0.05f);
     simObjManager = new SimulationObjectManager();
     simObjManager.setCameraTargetGetter(() -> new Vector3(camCtrl.target));
     inputProcessor = new CustomInputProcessor(camCtrl, simObjManager);
@@ -105,10 +105,10 @@ public class BhSimulator implements ApplicationListener {
 
   private Camera createCamera() {
     var cam = new PerspectiveCamera(70, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-    cam.position.set(3f, 5.0f, 10f);
+    cam.position.set(0.5f, 1f, 0.5f);
     cam.lookAt(0, 0, 0);
-    cam.near = 0.1875f;
-    cam.far = 120f;
+    cam.near = 0.04f;
+    cam.far = 8.5f;
     cam.update();
     return cam;
   }
@@ -135,7 +135,7 @@ public class BhSimulator implements ApplicationListener {
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
     Gdx.gl.glLineWidth(1);
     modelBatch.begin(cam);
-    modelBatch.render(simObjManager.getRendarableProviders(), environment);
+    modelBatch.render(simObjManager.getRenderableProviders(), environment);
     modelBatch.end();
     uiComposer.draw(delta);
     // simObjManager.drawCollisionObjects(cam); // for debug

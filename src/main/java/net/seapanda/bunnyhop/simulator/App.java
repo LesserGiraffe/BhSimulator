@@ -58,7 +58,8 @@ public class App {
     };
     var config = new Lwjgl3ApplicationConfiguration();
     config.setWindowListener(windowListener);
-    config.setWindowedMode(800, 600);    
+    config.setWindowedMode(1200, 900);
+    config.setForegroundFPS(60);
     new Lwjgl3Application(new BhSimulator(), config);
   }
 

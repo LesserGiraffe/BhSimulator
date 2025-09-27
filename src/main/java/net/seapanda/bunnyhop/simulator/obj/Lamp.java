@@ -36,7 +36,6 @@ import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
-import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
@@ -49,7 +48,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.kotcrab.vis.ui.widget.VisTable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.mgsx.gltf.loaders.glb.GLBLoader;
@@ -73,10 +71,10 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
  
   private SceneAsset sceneAsset = new GLBLoader().load(
       Gdx.files.absolute(BhSimulator.ASSET_PATH + "/Models/Lamp.glb"));
-  private Scene scene;
+  private final Scene scene;
   private final float scale;
   /** ローカル空間上でのこのオブジェクトの論理的な原点. */
-  private Vector3 logicalOrigin = new Vector3(0, -0.25f, 0);
+  private final Vector3 logicalOrigin = new Vector3(0, -0.03f, 0);
   /** light 部分のモデル. */
   private Model lightModel;
   /** 本体の衝突判定オブジェクト. */
@@ -85,27 +83,25 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
   private final btGhostObject lightCollisionObj;
   /** この 3D モデルのリソースを共有する {@link ObjectReflection} オブジェクトの個数. */
   private final MutableInt numShared = new MutableInt(0);
-  /** ライトの円錐の半径. */
-  private float lightRadius = 2f;
-  /** ライトの円錐の高さ. */
-  private float lightHeight = 2f;
+  /** ライトの円錐の半径. (単位: meters) */
+  private float lightRadius = 0.24f;
+  /** ライトの円錐の高さ. (単位: meters) */
+  private float lightHeight = 0.24f;
   /** ライトの角度 (degrees). 0: 下向き,  90,-90: 水平*/
   private float lightAngle = 0;
   /** ローカル座標での光源の位置. */
-  private Vector3 lightSourcePos;
+  private final Vector3 lightSourcePos;
   /** ライト部分の {@link Node} の ID. */
-  private String lightNodeId = "light";
+  private final String lightNodeId = "light";
   /** ライトの回転軸. */
-  private Vector3 lightRotAxis = new Vector3(1f, 0f, 0f);
-  /** この 3D モデルの衝突判定オブジェクトを保持している {@link btDynamicsWorld} のリスト. */
-  private final List<btDynamicsWorld> parentWorlds = new ArrayList<>();
+  private final Vector3 lightRotAxis = new Vector3(1f, 0f, 0f);
   /** 選択状態を保持するフラグ. */
   private boolean isSelected = false;
   /** 選択されたときの色. */
   private final Attribute colorAttrOnSelected = 
       ColorAttribute.createEmissive(new Color(0.2f, 0.2f, 0.2f, 1.0f));
   /** UI のルートコンポーネント. */
-  private VisTable uiComponent;
+  private final VisTable uiComponent;
 
   /**
    * コンストラクタ.
@@ -127,7 +123,7 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
           .rotate(lightRotAxis, lightAngle)
           .setTranslation(lightSourcePos)
           .mulLeft(worldTrans);
-      lightCollisionObj.setWorldTransform(trans);      
+      lightCollisionObj.setWorldTransform(trans);
     });
     uiComponent = new LampCtrlView(this);
   }
@@ -162,13 +158,13 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
     var material = new Material();
     material.set(ColorAttribute.createDiffuse(new Color(Color.WHITE)));
     material.set(new BlendingAttribute(0.3f));
-    
     MeshPartBuilder mpb = builder.part(
         "cone",
         GL20.GL_TRIANGLES,
         Usage.Position | Usage.Normal,
         material);
-    ConeShapeBuilder.build(mpb, 2f, 1f, 2f, 20);
+    // 底面の半径 1 m, 高さ 1 m の円錐を作成する
+    ConeShapeBuilder.build(mpb, 2, 1, 2, 20);
     lightModel = builder.end();
     Node coneNode = lightModel.nodes.get(0);
     coneNode.id = lightNodeId;
@@ -198,14 +194,17 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
 
   private btRigidBody createRigidBody(btCollisionShape shape, btMotionState motionState) {
     var localInertia = new Vector3();
-    var mass = 0.5f;
+    var mass = 0.1f;
     shape.calculateLocalInertia(mass, localInertia);
-    var rigidBody = new btRigidBody(mass, motionState, shape, localInertia);
+    var info = new btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
+    info.setAdditionalDamping(true);
+    var rigidBody = new btRigidBody(info);
+    info.dispose();
     rigidBody.setCollisionFlags(
         rigidBody.getCollisionFlags()
         | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
     rigidBody.setActivationState(Collision.DISABLE_DEACTIVATION);
-    rigidBody.setFriction(1);
+    rigidBody.setFriction(0.5f);
     rigidBody.userData = this;
     return rigidBody;
   }
@@ -228,12 +227,10 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
   private btCollisionShape createLightCollisionShape() {
     // 衝突判定オブジェクトが見た目より若干大きくなるので,
     // モデルの大きさが等倍の時に正確に衝突判定できるように補正係数を設ける.
-    float heightCorrection = 0.95f;
-    float radiusCorrection = 0.94f;
-    float offsetCorrection = 1.06f;
-    var coneShape = new btConeShape(1f * radiusCorrection, 1f * heightCorrection);
+    var coneShape = new btConeShape(1f, 1f);
+    coneShape.setMargin(0);
     var shape = new btCompoundShape();
-    var coneApexPosOffset = new Vector3(0, (-1f / 2f) * offsetCorrection, 0);
+    var coneApexPosOffset = new Vector3(0, -1f / 2f, 0);
     shape.addChildShape(new Matrix4().setTranslation(coneApexPosOffset), coneShape);
     shape.setLocalScaling(new Vector3(lightRadius, lightHeight, lightRadius).scl(scale));
     return shape;
@@ -268,7 +265,7 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
     return lightAngle;
   }
 
-  /** ライトの 3D モデルの円錐の半径を設定する. */
+  /** ライトの 3D モデルの円錐の半径を設定する. (単位: meters) */
   public void setLightRadius(float radius) {
     if (radius <= 0) {
       return;
@@ -277,15 +274,14 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
     lightCollisionObj.getCollisionShape()
         .setLocalScaling(new Vector3(lightRadius, lightHeight, lightRadius).scl(scale));
     calcLightTransform();
-    computeCollisionDetection(lightCollisionObj);
   }
 
-  /** ライトの 3D モデルの円錐の半径を取得する. */
+  /** ライトの 3D モデルの円錐の半径を取得する. (単位: meters) */
   public float getLightRadius() {
     return lightRadius;
   }
 
-  /** ライトの 3D モデルの高さを設定する. */
+  /** ライトの 3D モデルの高さを設定する. (単位: meters) */
   public void setLightHeight(float height) {
     if (height <= 0) {
       return;
@@ -294,24 +290,9 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
     lightCollisionObj.getCollisionShape()
         .setLocalScaling(new Vector3(lightRadius, lightHeight, lightRadius).scl(scale));
     calcLightTransform();
-    computeCollisionDetection(lightCollisionObj);
   }
 
-  /** 引数で指定した衝突判定オブジェクトの衝突判定を再計算する. */
-  private void computeCollisionDetection(btCollisionObject collisionObj) {
-    for (btDynamicsWorld world : parentWorlds) {
-      btBroadphaseProxy bp = collisionObj.getBroadphaseHandle();
-      if (bp == null) {
-        continue;
-      }
-      world.getBroadphase()
-          .getOverlappingPairCache()
-          .cleanProxyFromPairs(bp, world.getDispatcher());
-      world.performDiscreteCollisionDetection();
-    }
-  }
-
-  /** ライトの 3D モデルの円錐の高さを取得する. (単位: degrees) */
+  /** ライトの 3D モデルの円錐の高さを取得する. (単位: meters) */
   public float getLightHeight() {
     return lightHeight;
   }
@@ -437,14 +418,12 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
             CollisionGroup.PHYSICAL_CONTACT_DETECTOR));
     world.addCollisionObject(
         lightCollisionObj, CollisionGroup.LAMP_LIGHT.val(), CollisionGroup.LAMP_LIGHT.val());
-    parentWorlds.add(world);
   }
 
   @Override
   public void removeCollisionObjectsFrom(btDynamicsWorld world) {
     world.removeRigidBody(body);
     world.removeCollisionObject(lightCollisionObj);
-    parentWorlds.remove(world);
   }
 
   @Override
