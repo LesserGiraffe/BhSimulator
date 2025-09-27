@@ -92,7 +92,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 実際の距離センサの最大測定距離 (m) . */
   private final float maxMeasurableDistance = 3f;
   /** 3D モデルが定義された空間における距離センサのビームの始点. */
-  private final Vector3 beamStartPos = new Vector3(0, 0.93f, -3.634f);
+  private final Vector3 beamStartPos = new Vector3(0, 0.93f, -3.5f);
   /** 3D モデルが定義された空間における距離センサのビームの終点. */
   private final Vector3 beamEndPos = new Vector3();
   private final List<AnimationController> rhsAnimCtrls = new ArrayList<>();
