@@ -102,13 +102,11 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 摩擦係数. */
   private final float friction = 0.5f;
   /** 回転運動に作用する摩擦係数. */
-  private final float spinningFriction = 0.04f;
+  private final float spinningFriction = 0.05f;
   /** 底面の半径. */
   private float radius;
   /** 現在の動作. */
   private Motion motion = Motion.IDLE;
-  /** 1 つ前の物理シミュレーションステップの動作. */
-  private Motion prevMotion = Motion.IDLE;
   /** 1 つ前の物理シミュレーションステップの動作. */
   private boolean isOnGroundPrev = false;
   /** 現在の速度. */
@@ -124,14 +122,10 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 選択状態を保持するフラグ. */
   private boolean isSelected = false;
   /** 選択されたときの色. */
-  private final Attribute colorAttrOnSelected = 
+  private final Attribute colorAttrOnSelected =
       ColorAttribute.createEmissive(new Color(0.2f, 0.2f, 0.2f, 1.0f));
   /** この 3D モデルの衝突判定オブジェクトを保持する {@link btCollisionWorld} オブジェクト. */
   private btCollisionWorld world;
-  /** 前の物理シミュレーションステップで回転動作で生じた角速度. */
-  private final Vector3 prevAngularVelocity = new Vector3(0f, 0f, 0f);
-  /** 前の物理シミュレーションステップで前進, 後退動作で生じた速度. */
-  private final Vector3 prevVelocity = new Vector3(0f, 0f, 0f);
   /** 右目の初期色. */
   private final Color defaultRightEyeColor;
   /** 左目の初期色. */
@@ -163,7 +157,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     uiComponent = new RaspiCarCtrlView(this);
   }
 
-  /** 
+  /**
    * モデルが持つ姿勢および物理量を更新する.
    *
    * @param deltaTime 前回このメソッドが呼ばれてからの経過時間 (秒)
@@ -221,18 +215,14 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       updateInvInertiaDiagLocal(mul);
     }
     isOnGroundPrev = isOnGround;
-    if (!isOnGround) {
-      prevMotion = motion;
+    if (!isOnGround || timeStep <= 0) {
       return;
     }
-    if (timeStep > 0) {
-      if ((motion == Motion.MOVE_FORWARD) || (motion == Motion.MOVE_BACKWARD)) {
-        setVelocity(speed, timeStep);
-      } else if ((motion == Motion.TURN_LEFT) || (motion == Motion.TURN_RIGHT)) {
-        setAngularVelocity(rotationSpeed, timeStep);
-      }
+    if ((motion == Motion.MOVE_FORWARD) || (motion == Motion.MOVE_BACKWARD)) {
+      setVelocity(speed, timeStep);
+    } else if ((motion == Motion.TURN_LEFT) || (motion == Motion.TURN_RIGHT)) {
+      setAngularVelocity(rotationSpeed, timeStep);
     }
-    prevMotion = motion;
   }
 
   /** 3次元モデルを作成する. */
@@ -250,7 +240,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   }
 
   /**
-   * 距離センサのビームのモデルを作成する. 
+   * 距離センサのビームのモデルを作成する.
    *
    * @param transform RaspiCar 本体の姿勢行列
    */
@@ -301,7 +291,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
 
   /** アニメーション制御用オブジェクトを作成する. */
   private void createAnimDescs() {
-    String[] lhsAnims = {"caterpillar-move-L", "arm-move-L", "gears-rotation-L"};    
+    String[] lhsAnims = {"caterpillar-move-L", "arm-move-L", "gears-rotation-L"};
     for (var anim : lhsAnims) {
       var ctrl = new AnimationController(scene.modelInstance);
       ctrl.setAnimation(anim, -1);
@@ -316,13 +306,13 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     }
   }
 
-  /** 
+  /**
    * {@code collisionNodeNames} で指定した {@link Node} のバウンディングボックスを
    * 衝突範囲として持つ {@link btGhostObject} を作成する.
    */
   private btGhostObject createCollisionObject(String... collisionNodeNames) {
     var shape = new btCompoundShape();
-    List<Node> collisionNodes = 
+    List<Node> collisionNodes =
         GeoUtil.addCollisionBoxes(shape, scene.modelInstance, collisionNodeNames);
     collisionNodes.forEach(node -> node.parts.get(0).enabled = false);
     var ghostObj = new btGhostObject();
@@ -341,7 +331,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     var transformedLogicalOrigin = new Vector3(logicalOrigin);
     Matrix4 mat = body.getWorldTransform();
     transformedLogicalOrigin.mul(mat);
-    var transformedOrigin = new Vector3(); 
+    var transformedOrigin = new Vector3();
     mat.getTranslation(transformedOrigin);
     return transformedOrigin.sub(transformedLogicalOrigin).add(pos);
   }
@@ -568,11 +558,11 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
 
   /** モデルに角速度を与える. */
   private void setAngularVelocity(float rotSpeed, float deltaTime) {
-    // friction の影響度が不明なので, 仮に spinningFriction の 1/20 としておく.
-    float frictionTorque = radius * mass * 9.8f * (spinningFriction + friction / 20f);
+    // friction の影響度が不明なので計算式に入れない
+    float frictionTorque = radius * mass * 9.8f * spinningFriction;
     float invInertia = body.getInvInertiaDiagLocal().y;
     // 摩擦力で減速する分の補正量 (接触するもう一方のオブジェクトの摩擦力を考慮していない適当な式であることに注意)
-    float correction = 5.7f * frictionTorque * invInertia * deltaTime * Math.signum(rotSpeed);
+    float correction = 8.15f * frictionTorque * invInertia * deltaTime * Math.signum(rotSpeed);
     float[] elems = body.getWorldTransform().getValues();
     var targetAngularVelocity =
         new Vector3(elems[Matrix4.M01], elems[Matrix4.M11], elems[Matrix4.M21])
@@ -600,7 +590,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     return (float) Math.acos(Math.clamp(rotatedY.dot(0, 1, 0), -1, 1));
   }
 
-  /** 
+  /**
    * この RaspiCar が持つ距離センサの値を取得する. (単位: meters)
    *
    * @return この RaspiCar が持つ距離センサの値
@@ -639,7 +629,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     throw new AssertionError("Right eye color is not set.");
   }
 
-  /** 
+  /**
    * この RaspiCar の左目の色を設定する.
    *
    * @param color 設定する目の色. (nullable)
@@ -653,7 +643,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     material.set(ColorAttribute.createDiffuse(color));
   }
 
-  /** 
+  /**
    * この RaspiCar の右目の色を設定する.
    *
    * @param color 設定する目の色. (nullable)
@@ -724,7 +714,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     body.setWorldTransform(mat);
     body.getMotionState().setWorldTransform(mat);
   }
-  
+
   @Override
   public ObjectReflection createObjectReflection() {
     numShared.increment();
@@ -803,7 +793,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   }
 
   @Override
-  public void select() { 
+  public void select() {
     isSelected = true;
     scene.modelInstance.materials.forEach(material -> material.set(colorAttrOnSelected));
   }
@@ -826,7 +816,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
 
   /** モデルの動作を表す列挙型. */
   public enum Motion {
-    MOVE_FORWARD,  
+    MOVE_FORWARD,
     MOVE_BACKWARD,
     TURN_RIGHT,
     TURN_LEFT,
