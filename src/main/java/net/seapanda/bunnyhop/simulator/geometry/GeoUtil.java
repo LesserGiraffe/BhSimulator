@@ -48,7 +48,7 @@ public class GeoUtil {
   }
 
   /**
-   * {@code modelInstance} から {@code nodeNames} に指定した名前の {@link Node} を探し, 
+   * {@code modelInstance} から {@code nodeNames} に指定した名前の {@link Node} を探し,
    * そのバウンディングボックスを算出する.
    * それと同じ大きさと位置を持つ {@link btBoxShape} を {@code container} に追加する.
    *

@@ -57,13 +57,13 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
   /** シミュレーション空間に存在する 3D モデルを格納するリスト. */
   private final ArrayList<SimulationObject> instances = new ArrayList<>();
   private final Stage stage = new Stage(1f, new Vector3(0f, 0f, 0f));
-  private final RaspiCar car = new RaspiCar(1f / 67f, new Vector3(0f, 0.3f, 0.3f));
+  private final RaspiCar car = new RaspiCar(1f, new Vector3(0f, 0.1f, 0.1f));
   private final RayTestHelper rayTestHelper;
   private final btDiscreteDynamicsWorld dynamicsWorld;
   private final ArrayList<Disposable> disposables = new ArrayList<>();
   private final DebugDrawer debugDrawer = new DebugDrawer();
   /** オブジェクトがステージから落ちたと判断する鉛直方向の位置の閾値. */
-  private final float verticalPosThreshold = -10f;
+  private final float verticalPosThreshold = -5f;
   /** カメラの注視点を取得する関数のオブジェクト. */
   private Supplier<Vector3> cameraTargetGetter = () -> new Vector3(0f, 3f, 0f);
   /** シミュレーション空間に, 現在追加されている 3D モデルの個数. */
@@ -216,7 +216,7 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
         pe.resetPhysicalState();
       }
       Vector3 newObjPos = cameraTargetGetter.get();
-      newObjPos.y = 1f;
+      newObjPos.y = 0.4f;
       stage.clampPosXz(newObjPos);
       obj.setPosition(newObjPos);
     }

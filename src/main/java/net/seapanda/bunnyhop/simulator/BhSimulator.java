@@ -86,7 +86,7 @@ public class BhSimulator implements ApplicationListener {
     environment = createEnvironment();
     cam = createCamera();
     var camCtrl = new CustomCameraInputController(
-        cam, 8f, 85f, -1.75f, 1.75f, -1.75f, 1.75f, 0.1f, 3.5f, 0.05f);
+        cam, 8f, 85f, -1.78f, 1.78f, -1.78f, 1.78f, 0.1f, 3.5f, 0.05f);
     simObjManager = new SimulationObjectManager();
     simObjManager.setCameraTargetGetter(() -> new Vector3(camCtrl.target));
     inputProcessor = new CustomInputProcessor(camCtrl, simObjManager);

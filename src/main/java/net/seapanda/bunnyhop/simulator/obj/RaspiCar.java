@@ -84,15 +84,15 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 距離センサのビームを描画するためのオブジェクト. */
   private final ModelInstance sensorBeam;
   /** 3D モデルの長さ / 実物の長さ. */
-  private final float modelScale = 67;
+  private final float modelScale = 1;
   /** 描画時のスケール. */
   private final float scale;
   /** 3D モデルが定義された空間におけるこのオブジェクトの論理的な原点. */
-  private final Vector3 logicalOrigin = new Vector3(0f, -1.3f, 0f);
+  private final Vector3 logicalOrigin = new Vector3(0f, -0.0275f, 0f);
   /** 実際の距離センサの最大測定距離 (m) . */
   private final float maxMeasurableDistance = 3f;
   /** 3D モデルが定義された空間における距離センサのビームの始点. */
-  private final Vector3 beamStartPos = new Vector3(0, 0.93f, -3.5f);
+  private final Vector3 beamStartPos = new Vector3(0, 0.0072f, -0.05262f);
   /** 3D モデルが定義された空間における距離センサのビームの終点. */
   private final Vector3 beamEndPos = new Vector3();
   private final List<AnimationController> rhsAnimCtrls = new ArrayList<>();
@@ -100,15 +100,11 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   /** 質量. (kg) */
   private final float mass = 0.5f;
   /** 摩擦係数. */
-  private final float friction = 0.5f;
+  private final float friction = 0.8f;
   /** 回転運動に作用する摩擦係数. */
-  private final float spinningFriction = 0.05f;
-  /** 底面の半径. */
-  private float radius;
+  private final float spinningFriction = 0.2f;
   /** 現在の動作. */
   private Motion motion = Motion.IDLE;
-  /** 1 つ前の物理シミュレーションステップの動作. */
-  private boolean isOnGroundPrev = false;
   /** 現在の速度. */
   private float speed = 0;
   /** 現在の角速度. */
@@ -165,10 +161,10 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
    */
   public void update(float deltaTime, float timeStep) {
     updateAnimation(deltaTime);
-    updatePhysicalState(timeStep);
     if (timeLeft <= 0) {
       switchMotion(Motion.IDLE, null);
     } else {
+      updatePhysicalState(Math.min(timeStep, timeLeft));
       timeLeft -= deltaTime;
     }
   }
@@ -200,28 +196,16 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     }
   }
 
-  private void updateInvInertiaDiagLocal(float mul) {
-    Vector3 invInertia = body.getInvInertiaDiagLocal();
-    invInertia.y *= mul;
-    body.setInvInertiaDiagLocal(invInertia);
-  }
-
   /** 物理的な状態を更新する. */
   private void updatePhysicalState(float timeStep) {
     boolean isOnGround = isOnGround();
-    if (isOnGround != isOnGroundPrev) {
-      // 接地時に Yaw 軸周りに回りにくくする.
-      float mul = isOnGround ? (1f / 4f) : 4f;
-      updateInvInertiaDiagLocal(mul);
-    }
-    isOnGroundPrev = isOnGround;
     if (!isOnGround || timeStep <= 0) {
       return;
     }
     if ((motion == Motion.MOVE_FORWARD) || (motion == Motion.MOVE_BACKWARD)) {
-      setVelocity(speed, timeStep);
+      move(speed, timeStep);
     } else if ((motion == Motion.TURN_LEFT) || (motion == Motion.TURN_RIGHT)) {
-      setAngularVelocity(rotationSpeed, timeStep);
+      rotate(rotationSpeed, timeStep);
     }
   }
 
@@ -266,18 +250,15 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     List<Node> collisionNodes =
         GeoUtil.addCollisionBoxes(shape, modelInstance, "body-collision");
     collisionNodes.forEach(node -> node.parts.get(0).enabled = false);
-    var aabbMax = new Vector3();
-    var aabbMin = new Vector3();
-    var trans = new Matrix4();
-    shape.getAabb(trans, aabbMin, aabbMax);
-    radius = (float) Math.sqrt(aabbMax.x * aabbMax.x + aabbMax.z * aabbMax.z);
     return shape;
   }
 
   private btRigidBody createRigidBody(btCollisionShape shape, btMotionState motionState) {
     var localInertia = new Vector3();
     shape.calculateLocalInertia(mass, localInertia);
-    var rigidBody = new btRigidBody(mass, motionState, shape, localInertia);
+    var info = new btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
+    var rigidBody = new btRigidBody(info);
+    info.dispose();
     rigidBody.setCollisionFlags(
         rigidBody.getCollisionFlags()
         | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
@@ -285,7 +266,8 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     rigidBody.setFriction(friction);
     rigidBody.userData = this;
     rigidBody.setSpinningFriction(spinningFriction);
-    rigidBody.setRollingFriction(1e-10f);
+    rigidBody.setRollingFriction(1e-5f);
+    rigidBody.setContactStiffnessAndDamping(2000f, 18f);
     return rigidBody;
   }
 
@@ -520,7 +502,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
 
   /** 速度レベルからアニメーションの再生速度を求める. */
   private float calcAnimSpeed(float speedLevel) {
-    final float caterpillarLen = 21.38f; // meter
+    final float caterpillarLen = 0.31f; // meter
     final int caterpillarAnimLen = 192; // frames
     final int frameRate = 24; // frames / sec
     // キャタピラ 1 回転にかかる時間 [sec]
@@ -529,57 +511,39 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     return caterpillarAnimTime * speed / (caterpillarLen * scale);
   }
 
-  /** モデルに速度を与える. */
-  private void setVelocity(float speed, float deltaTime) {
-    float[] elems = body.getWorldTransform().getValues();
-    // 摩擦力で減速する分の補正量 (接触するもう一方のオブジェクトの摩擦力を考慮していない適当な式であることに注意)
-    float correction = 0.37f * (deltaTime * friction * 9.8f) * Math.signum(speed);
-    var targetVelocity =
-        new Vector3(-elems[Matrix4.M02], -elems[Matrix4.M12], -elems[Matrix4.M22])
-        .scl(speed + correction);
-
-    Vector3 currentVelocity = body.getLinearVelocity();
-    float dot = currentVelocity.dot(targetVelocity);
-    float targetLen = targetVelocity.len();
-    float targetLen2 = targetLen * targetLen;
-    var currentVelocityForTarget = new Vector3(targetVelocity).scl(dot / targetLen2);
-    // 現在の速度が, 進行方向の目標の速度より大きい場合, 速度を変化させない.
-    // 現在の速度が, 進行方向の目標の速度以下の場合, 足りない分だけ進行方向の速度を追加する.
-    if (targetLen > currentVelocity.len()) {
-      // 目標の速度と反対の速度を持っていた場合に余計に加速しないようにする.
-      if (dot > 0) {
-        targetVelocity.sub(currentVelocityForTarget);
-      }
-    } else {
-      targetVelocity.set(0, 0, 0);
+  /**
+   * モデルを前進または後退させる.
+   *
+   * <p>以下の理由により, モデルに速度を与える方法ではなく位置を指定する方法をとる.
+   * <br><br>
+   * - 速度を与える方法では, 摩擦を考慮して大き目の速度を与えなければならないが,
+   *   低速時の摩擦のモデルが Coulomb 摩擦モデルに従わないので速度の増分の計算するのが難しい.
+   *   (Stribeck 摩擦モデルのような挙動を示す) <br><br>
+   * - フレームレートによって摩擦モデルを切り替えるための閾値となる速度が変わるので, 速度の増分の計算が複雑になる. <br><br>
+   * - 正確に (速度 * 時間) 分の距離を移動させようとすると, 移動終了後に滑る分を相殺する処理が必要になる. <br><br>
+   * - 軽い箱の上を走るとき, 箱ごと回ってしまう.
+   * </p>
+   */
+  private void move(float speed, float deltaTime) {
+    // 現在の速度が進行方向の目標の速度より大きい場合, 移動しない.
+    if (body.getLinearVelocity().len() > Math.abs(speed)) {
+      return;
     }
-    body.setLinearVelocity(targetVelocity.add(currentVelocity));
+    // Matrix4.translate を使う場合, 移動方向はローカル座標系で指定する必要がある
+    var distance = new Vector3(0, 0, -1).scl(speed * deltaTime);
+    Matrix4 mat = body.getWorldTransform().translate(distance);
+    body.setWorldTransform(mat);
   }
 
-  /** モデルに角速度を与える. */
-  private void setAngularVelocity(float rotSpeed, float deltaTime) {
-    // friction の影響度が不明なので計算式に入れない
-    float frictionTorque = radius * mass * 9.8f * spinningFriction;
-    float invInertia = body.getInvInertiaDiagLocal().y;
-    // 摩擦力で減速する分の補正量 (接触するもう一方のオブジェクトの摩擦力を考慮していない適当な式であることに注意)
-    float correction = 7.54f * frictionTorque * invInertia * deltaTime * Math.signum(rotSpeed);
-    float[] elems = body.getWorldTransform().getValues();
-    var targetAngularVelocity =
-        new Vector3(elems[Matrix4.M01], elems[Matrix4.M11], elems[Matrix4.M21])
-        .scl(rotSpeed + correction);
-
-    Vector3 currentAngularVelocity = body.getAngularVelocity();
-    float dot = currentAngularVelocity.dot(targetAngularVelocity);
-    float len = targetAngularVelocity.len2();
-    var currentAngularVelocityForTarget = new Vector3(targetAngularVelocity).scl(dot / len);
-    if (targetAngularVelocity.len() > currentAngularVelocity.len()) {
-      if (dot > 0) {
-        targetAngularVelocity.sub(currentAngularVelocityForTarget);
-      }
-    } else {
-      targetAngularVelocity.set(0, 0, 0);
+  /** モデルを回転させる. */
+  private void rotate(float rotSpeed, float deltaTime) {
+    if (body.getAngularVelocity().len() > Math.abs(rotSpeed)) {
+      return;
     }
-    body.setAngularVelocity(targetAngularVelocity.add(currentAngularVelocity));
+    // Matrix4.rotateRad を使う場合, 回転軸はローカル座標系で指定する必要がある
+    var rotAxis = new Vector3(0, 1, 0);
+    Matrix4 mat = body.getWorldTransform().rotateRad(rotAxis, rotSpeed * deltaTime);
+    body.setWorldTransform(mat);
   }
 
   /** ローカル座標系の Y 軸とワールド座標系の Y 軸のなす角度 (radian) を求める. */

@@ -22,7 +22,6 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowAdapter;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
 import net.seapanda.bunnyhop.simulator.common.BhSimConstants;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -77,7 +76,7 @@ public class App {
         .desc("Print help about BhRuntime environment variables and exit.")
         .build());
 
-    CommandLineParser parser = new DefaultParser();
+    var parser = new DefaultParser();
     CommandLine cmd = null;
     try {
       cmd = parser.parse(options, args);
