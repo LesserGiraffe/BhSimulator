@@ -40,7 +40,7 @@ import net.seapanda.bunnyhop.simulator.obj.interfaces.Collidable;
  */
 public class RayTestHelper {
 
-  private btCollisionWorld world;
+  private final btCollisionWorld world;
 
   public RayTestHelper(btCollisionWorld world) {
     this.world = world;
@@ -116,8 +116,8 @@ public class RayTestHelper {
     // 配列のインデックスを交点までの距離に応じて並べ替える.
     btScalarArray distanceList = result.getHitFractions();
     List<Integer> indices = IntStream.iterate(0, n -> n + 1).limit(distanceList.size()).boxed()
+        .sorted((a, b) -> Float.compare(distanceList.atConst(a), distanceList.atConst(b)))
         .collect(Collectors.toCollection(ArrayList::new));
-    indices.sort((a, b) -> (distanceList.atConst(a) > distanceList.atConst(b)) ? 1 : -1);
 
     btCollisionObjectConstArray collisionObjects = result.getCollisionObjects();
     for (int i : indices) {

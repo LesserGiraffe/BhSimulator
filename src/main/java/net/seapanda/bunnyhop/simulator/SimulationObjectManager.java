@@ -123,7 +123,6 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
     teleportObjectsDroppedOutOfStage();
     simStepTimeCalc.advanceTime(deltaTime);
     car.update(deltaTime, simStepTimeCalc.getNextTimeStep());
-    // Box の AdditionalDamping を有効にしているので, シミュレーション間隔を 1 / 90 秒から減らさないこと.
     dynamicsWorld.stepSimulation(deltaTime, simStepTimeCalc.maxSteps, simStepTimeCalc.timeStep);
   }
 

@@ -28,6 +28,7 @@ import com.badlogic.gdx.physics.bullet.collision.Collision;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
+import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
@@ -78,9 +79,18 @@ public class Box
     this.size = size;
     scene = createScene(size, pos, isHeavy);
     var motionState = new CustomMotionState(scene.modelInstance.transform);
-    var shape = new btBoxShape(new Vector3(size).scl(0.5f));
+    btCollisionShape shape = createCollisionShape(size);
     body = createRigidBody(shape, motionState, isHeavy);
     uiComponent = new MovableBoxCtrlView(this);
+  }
+
+  private static btCollisionShape createCollisionShape(Vector3 size) {
+    // btBoxShape は Ray Test の精度が良くないので, btCompoundShape を使用する.
+    var boxShape = new btBoxShape(new Vector3(size).scl(0.5f));
+    boxShape.setMargin(0);
+    var shape = new btCompoundShape();
+    shape.addChildShape(new Matrix4().idt(), boxShape);
+    return shape;
   }
 
   /** 3D モデルを作成する. */
