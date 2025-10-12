@@ -22,10 +22,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar.Motion;
+import net.seapanda.bunnyhop.utility.concurrent.function.ConcurrentConsumerInvoker;
 import net.seapanda.bunnyhop.utility.function.ConsumerInvoker;
 
 /**
- * {@link BhSimulatorCmd} を処理するクラス.
+ * シミュレータ制御用のコマンドを処理するクラス.
+ *
+ * @author K.Koike
  */
 class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   
@@ -236,7 +239,8 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   public class CallbackRegistryImpl implements CallbackRegistry {
     
     /** コマンドを処理する直前に呼ばれるイベントハンドラを管理するオブジェクト. */
-    private ConsumerInvoker<CmdProcessingEvent> onCmdProcessingInvoker = new ConsumerInvoker<>();
+    private final ConsumerInvoker<CmdProcessingEvent> onCmdProcessingInvoker =
+        new ConcurrentConsumerInvoker<>();
 
     @Override
     public ConsumerInvoker<CmdProcessingEvent>.Registry getOnCmdProcessing() {

@@ -20,17 +20,17 @@ import java.util.function.BiConsumer;
 import net.seapanda.bunnyhop.utility.function.ConsumerInvoker;
 
 /**
- * {@link BhSimulatorCmd} を処理する機能を規定したインタフェース.
+ * シミュレータ制御用コマンドを処理する機能を規定したインタフェース.
  */
 public interface SimulatorCmdProcessor {
 
   /**
-   * シミュレータコマンドを処理する.
+   * シミュレータ制御用コマンドを処理する.
    *
    * @param cmd 処理するコマンド
    * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド.
-   *                      <p> 第一引数 : 成否フラグ. (true -> 成功, false -> 失敗) </p>
-   *                      <p> 第二引数 : コマンドレスポンス </p>
+   * 第一引数 : 成否フラグ. (true -> 成功, false -> 失敗) <br>
+   * 第二引数 : コマンドレスポンス
    */
   void process(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished);
 
