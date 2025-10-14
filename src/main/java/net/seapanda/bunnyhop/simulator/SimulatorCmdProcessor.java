@@ -17,7 +17,7 @@
 package net.seapanda.bunnyhop.simulator;
 
 import java.util.function.BiConsumer;
-import net.seapanda.bunnyhop.utility.function.ConsumerInvoker;
+import net.seapanda.bunnyhop.utility.event.ConsumerInvoker;
 
 /**
  * シミュレータ制御用コマンドを処理する機能を規定したインタフェース.
