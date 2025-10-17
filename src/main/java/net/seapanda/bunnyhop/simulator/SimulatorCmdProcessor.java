@@ -30,7 +30,7 @@ public interface SimulatorCmdProcessor {
    * @param cmd 処理するコマンド
    * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド.
    * 第一引数 : 成否フラグ. (true -> 成功, false -> 失敗) <br>
-   * 第二引数 : コマンドレスポンス
+   * 第二引数 : コマンドレスポンスgig
    */
   void process(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished);
 
