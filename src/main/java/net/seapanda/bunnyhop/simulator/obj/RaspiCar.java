@@ -268,6 +268,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     rigidBody.setSpinningFriction(spinningFriction);
     rigidBody.setRollingFriction(1e-5f);
     rigidBody.setContactStiffnessAndDamping(2000f, 18f);
+    rigidBody.setDamping(0.8f, 0.8f);
     return rigidBody;
   }
 

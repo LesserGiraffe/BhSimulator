@@ -124,7 +124,8 @@ public class Box
     rigidBody.setActivationState(Collision.DISABLE_DEACTIVATION);
     rigidBody.setFriction(0.5f);
     rigidBody.userData = this;
-    rigidBody.setDamping(0f, 0.9995f);
+    rigidBody.setDamping(0.1f, 0.9995f);
+    rigidBody.setAngularFactor(0.9f);
     return rigidBody;
   }
 
