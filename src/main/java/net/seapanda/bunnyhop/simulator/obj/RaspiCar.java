@@ -163,15 +163,13 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
    */
   public void update(float deltaTime, float timeStep) {
     updateAnimation(deltaTime);
-    boolean isOnGround = isOnGround();
-    float damping = isOnGround ? 0.9f : 0.4f;
-    body.setDamping(damping, 0.9f);
-
+    float damping = isOnSomething() ? 0.9f : 0.0f;
+    body.setDamping(damping, damping);
     if (timeLeft <= 0) {
       body.setCollisionFlags(body.getCollisionFlags() & ~CF_HAS_CONTACT_STIFFNESS_DAMPING);
       switchMotion(Motion.IDLE, null);
     } else {
-      updatePhysicalState(Math.min(timeStep, timeLeft), isOnGround);
+      updatePhysicalState(Math.min(timeStep, timeLeft));
       timeLeft -= deltaTime;
     }
   }
@@ -204,8 +202,8 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   }
 
   /** 物理的な状態を更新する. */
-  private void updatePhysicalState(float timeStep, boolean isOnGround) {
-    if (!isOnGround || timeStep <= 0) {
+  private void updatePhysicalState(float timeStep) {
+    if (!isOnGround() || timeStep <= 0) {
       return;
     }
     body.setCollisionFlags(body.getCollisionFlags() | CF_HAS_CONTACT_STIFFNESS_DAMPING);
@@ -335,6 +333,16 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       }
     }
     return calcTiltAngle() <= (Math.PI / 4) && isCaterpillarCollided;
+  }
+
+  /** 実態のあるオブジェクトと接しているかチェックする. */
+  public boolean isOnSomething() {
+    for (CollisionObjPair pair : manifoldToCollisionPair.values()) {
+      if (!(pair.obj1().userData instanceof Lamp)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** 色センサの値を取得する. */
