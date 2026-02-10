@@ -171,7 +171,6 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
       body.setCollisionFlags(body.getCollisionFlags() & ~CF_HAS_CONTACT_STIFFNESS_DAMPING);
       switchMotion(Motion.IDLE, null);
     } else {
-      body.setCollisionFlags(body.getCollisionFlags() | CF_HAS_CONTACT_STIFFNESS_DAMPING);
       updatePhysicalState(Math.min(timeStep, timeLeft), isOnGround);
       timeLeft -= deltaTime;
     }
@@ -209,6 +208,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     if (!isOnGround || timeStep <= 0) {
       return;
     }
+    body.setCollisionFlags(body.getCollisionFlags() | CF_HAS_CONTACT_STIFFNESS_DAMPING);
     if ((motion == Motion.MOVE_FORWARD) || (motion == Motion.MOVE_BACKWARD)) {
       move(speed, timeStep);
     } else if ((motion == Motion.TURN_LEFT) || (motion == Motion.TURN_RIGHT)) {
@@ -274,7 +274,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     rigidBody.userData = this;
     rigidBody.setSpinningFriction(spinningFriction);
     rigidBody.setRollingFriction(1e-5f);
-    rigidBody.setContactStiffnessAndDamping(2000f, 18f);
+    rigidBody.setContactStiffnessAndDamping(3000f, 24f);
     return rigidBody;
   }
 
