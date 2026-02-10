@@ -16,6 +16,8 @@
 
 package net.seapanda.bunnyhop.simulator.obj;
 
+import static com.badlogic.gdx.physics.bullet.collision.btCollisionObject.CollisionFlags.CF_HAS_CONTACT_STIFFNESS_DAMPING;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -161,10 +163,16 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
    */
   public void update(float deltaTime, float timeStep) {
     updateAnimation(deltaTime);
+    boolean isOnGround = isOnGround();
+    float damping = isOnGround ? 0.9f : 0.4f;
+    body.setDamping(damping, 0.9f);
+
     if (timeLeft <= 0) {
+      body.setCollisionFlags(body.getCollisionFlags() & ~CF_HAS_CONTACT_STIFFNESS_DAMPING);
       switchMotion(Motion.IDLE, null);
     } else {
-      updatePhysicalState(Math.min(timeStep, timeLeft));
+      body.setCollisionFlags(body.getCollisionFlags() | CF_HAS_CONTACT_STIFFNESS_DAMPING);
+      updatePhysicalState(Math.min(timeStep, timeLeft), isOnGround);
       timeLeft -= deltaTime;
     }
   }
@@ -197,8 +205,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
   }
 
   /** 物理的な状態を更新する. */
-  private void updatePhysicalState(float timeStep) {
-    boolean isOnGround = isOnGround();
+  private void updatePhysicalState(float timeStep, boolean isOnGround) {
     if (!isOnGround || timeStep <= 0) {
       return;
     }
@@ -268,7 +275,6 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     rigidBody.setSpinningFriction(spinningFriction);
     rigidBody.setRollingFriction(1e-5f);
     rigidBody.setContactStiffnessAndDamping(2000f, 18f);
-    rigidBody.setDamping(0.4f, 0.9f);
     return rigidBody;
   }
 
