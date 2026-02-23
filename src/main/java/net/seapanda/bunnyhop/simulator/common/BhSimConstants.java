@@ -9,7 +9,7 @@ import net.seapanda.bunnyhop.utility.version.AppVersion;
  */
 public class BhSimConstants {
   /** アプリケーションのバージョン. */
-  public static final AppVersion APP_VERSION = AppVersion.of("bhsim-0.7.4");
+  public static final AppVersion APP_VERSION = AppVersion.of("bhsim-0.7.5");
 
   /** UI 関連のパラメータ. */
   public static class Ui {
@@ -23,12 +23,16 @@ public class BhSimConstants {
     public static class Dir {
       /** 言語ファイルが格納されたディレクトリ. */
       public static final String LANGUAGE = "Language";
+      /** 設定ファイルが格納されたディレクトリ. */
+      public static final String SETTINGS = "Settings";
     }
 
     /** ファイル名のリスト. */
     public static class File {
       /** 言語ファイルの名前. */
       public static final String LANGUAGE_FILE = "BhSimulator.json";
+      /** 設定ファイルの名前. */
+      public static final String BH_SIM_SETTINGS_JSON = "BhSimSettings.json";
     }
   }
 }

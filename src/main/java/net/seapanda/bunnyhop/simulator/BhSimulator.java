@@ -46,6 +46,8 @@ import net.seapanda.bunnyhop.simulator.common.TextDefs;
 import net.seapanda.bunnyhop.simulator.ui.UiComposer;
 import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 import net.seapanda.bunnyhop.utility.Utility;
+import net.seapanda.bunnyhop.utility.serialization.JsonExporter;
+import net.seapanda.bunnyhop.utility.serialization.JsonImporter;
 import net.seapanda.bunnyhop.utility.textdb.JsonTextDatabase;
 
 /**
@@ -72,6 +74,7 @@ public class BhSimulator implements ApplicationListener {
 
   /** コンストラクタ. */
   public BhSimulator() throws Exception {
+    importSettings();
     buildTextDb();
   }
 
@@ -149,6 +152,7 @@ public class BhSimulator implements ApplicationListener {
     UiUtil.dispose();
     VisUI.dispose();
     latch.countDown();
+    exportSettings();
   }
 
   @Override
@@ -208,5 +212,27 @@ public class BhSimulator implements ApplicationListener {
         BhSimConstants.Path.File.LANGUAGE_FILE);
     final var textDb = new JsonTextDatabase(textDbFile);
     TextDefs.setTextDatabase(textDb);
+  }
+
+  /** 設定ファイルを読み込んで, {@link BhSimSettings} クラスに反映する. */
+  private static void importSettings() {
+    Path filePath = Paths.get(
+        Utility.execPath,
+        BhSimConstants.Path.Dir.SETTINGS,
+        BhSimConstants.Path.File.BH_SIM_SETTINGS_JSON);
+    try {
+      JsonImporter.imports(BhSimSettings.class, filePath);
+    } catch (Exception ignored) { /* Do nothing. */ }
+  }
+
+  /** {@link BhSimSettings} の static フィールドの値を JSON ファイルに書き出す. */
+  private static void exportSettings() {
+    Path filePath = Paths.get(
+        Utility.execPath,
+        BhSimConstants.Path.Dir.SETTINGS,
+        BhSimConstants.Path.File.BH_SIM_SETTINGS_JSON);
+    try {
+      JsonExporter.export(BhSimSettings.class, filePath);
+    } catch (Exception ignored) { /* Do nothing. */ }
   }
 }
