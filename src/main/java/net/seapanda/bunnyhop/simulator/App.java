@@ -19,7 +19,6 @@ package net.seapanda.bunnyhop.simulator;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowAdapter;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
 import net.seapanda.bunnyhop.simulator.common.BhSimConstants;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -45,11 +44,11 @@ public class App {
       return;
     }
     if (cmd.hasOption("version")) {
-      System.out.println(BhSimConstants.APP_VERSION.toString());
+      System.out.println(BhSimConstants.APP_VERSION);
       return;
     }
 
-    Lwjgl3WindowListener windowListener = new Lwjgl3WindowAdapter() {
+    var windowListener = new Lwjgl3WindowAdapter() {
       @Override
       public boolean closeRequested() {
         return true;

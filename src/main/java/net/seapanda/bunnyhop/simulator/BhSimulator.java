@@ -51,7 +51,7 @@ import net.seapanda.bunnyhop.utility.serialization.JsonImporter;
 import net.seapanda.bunnyhop.utility.textdb.JsonTextDatabase;
 
 /**
- * BunnyHop で作成したプログラムの動作をシミュレーションするためのクラス.
+ * アプリケーションのライフサイクルを管理するクラス.
  *
  * @author K.Koike
  */
@@ -70,6 +70,7 @@ public class BhSimulator implements ApplicationListener {
   private UiComposer uiComposer;
   private SimulatorCmdProcessorImpl cmdProcessor;
   private CustomInputProcessor inputProcessor;
+  private final WindowStateManager windowManager = new WindowStateManager();
   private final CountDownLatch latch = new CountDownLatch(1);
 
   /** コンストラクタ. */
@@ -80,10 +81,7 @@ public class BhSimulator implements ApplicationListener {
 
   @Override
   public void create() {
-    var skinScale = UiUtil.dpi >= BhSimConstants.Ui.X2_SKIN_DPI_THRESHOLD
-        || (BhSimSettings.Ui.SCALE > 1)
-        ? VisUI.SkinScale.X2 : VisUI.SkinScale.X1;
-    VisUI.load(skinScale);
+    VisUI.load(getSkinScale());
     Bullet.init(true);
     modelBatch = createModelBatch();
     environment = createEnvironment();
@@ -97,7 +95,14 @@ public class BhSimulator implements ApplicationListener {
     Gdx.input.setInputProcessor(
         new InputMultiplexer(uiComposer.getInputProcessor(), inputProcessor, camCtrl));
     cmdProcessor = new SimulatorCmdProcessorImpl(simObjManager.getRaspiCar());
+    windowManager.restoreWindowState();
     latch.countDown();
+  }
+
+  private static VisUI.SkinScale getSkinScale() {
+    return UiUtil.dpi >= BhSimConstants.Ui.X2_SKIN_DPI_THRESHOLD
+        || (BhSimSettings.Ui.scale > 1)
+        ? VisUI.SkinScale.X2 : VisUI.SkinScale.X1;
   }
 
   private ModelBatch createModelBatch() {
@@ -141,6 +146,7 @@ public class BhSimulator implements ApplicationListener {
     modelBatch.render(simObjManager.getRenderableProviders(), environment);
     modelBatch.end();
     uiComposer.draw(delta);
+    windowManager.updateWindowState();
     // simObjManager.drawCollisionObjects(cam); // for debug
   }
 
@@ -152,6 +158,7 @@ public class BhSimulator implements ApplicationListener {
     UiUtil.dispose();
     VisUI.dispose();
     latch.countDown();
+    windowManager.saveWindowState();
     exportSettings();
   }
 

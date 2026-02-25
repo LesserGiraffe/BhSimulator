@@ -1,5 +1,7 @@
 package net.seapanda.bunnyhop.simulator.ui;
 
+import static net.seapanda.bunnyhop.simulator.BhSimulator.ASSET_PATH;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -14,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.kotcrab.vis.ui.widget.VisImage;
 import com.kotcrab.vis.ui.widget.VisImageButton;
 import com.kotcrab.vis.ui.widget.VisLabel;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.common.BhSimSettings;
 
 /**
@@ -29,14 +30,14 @@ public class UiUtil {
   /** mm からピクセル数に変換するときに掛ける値. */
   public static final float mm = Gdx.graphics.getDensity() * 160f / 25.4f;
   /** mm に UI スケールを掛けた値. */
-  public static final float sclmm = mm * BhSimSettings.Ui.SCALE;
+  public static final float sclmm = mm * BhSimSettings.Ui.scale;
   /** ポイント数にかけるとモニタの物理解像度によらないポイント数になる値. */
   public static final float pt = Gdx.graphics.getDensity() * 160f / 72f;
   /* pt に UI スケールを掛けた値. */
-  public static final float sclpt = pt * BhSimSettings.Ui.SCALE;
+  public static final float sclpt = pt * BhSimSettings.Ui.scale;
 
-  private static String fontPath = BhSimulator.ASSET_PATH + "/Images/GenShinGothic-Normal.ttf";
-  private static FreeTypeFontGenerator fontGenerator = 
+  private static final String fontPath = ASSET_PATH + "/Images/GenShinGothic-Normal.ttf";
+  private static final FreeTypeFontGenerator fontGenerator =
       new FreeTypeFontGenerator(Gdx.files.absolute(fontPath));
 
   /** UI 部品のボタンを作成する. */

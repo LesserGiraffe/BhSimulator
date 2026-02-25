@@ -28,6 +28,21 @@ public class BhSimSettings {
   /** UI 関連のパラメータ. */
   public static class Ui {
     /** UI コンポーネントの大きさの倍率. */
-    public static volatile float SCALE = 1.0f;
+    public static volatile float scale = 1.0f;
+    public static volatile Window window = new Window();
+  }
+
+  /** ウィンドウ関連のパラメータ. */
+  public static class Window {
+    /** ウィンドウの幅. */
+    public volatile int width = Integer.MIN_VALUE;
+    /** ウィンドウの高さ. */
+    public volatile int height = Integer.MIN_VALUE;
+    /** ウィンドウの X 座標. */
+    public volatile int posX = Integer.MIN_VALUE;
+    /** ウィンドウの Y 座標. */
+    public volatile int posY = Integer.MIN_VALUE;
+    /** ウィンドウが最大化されていたかどうか. */
+    public volatile boolean maximized = false;
   }
 }
