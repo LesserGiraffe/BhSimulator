@@ -31,15 +31,15 @@ import org.lwjgl.glfw.GLFW;
 class WindowStateManager {
 
   /** 最大化および最小化されていない状態でのウィンドウの幅. */
-  private int width = Integer.MIN_VALUE;
+  private int width = window.width;
   /** 最大化および最小化されていない状態でのウィンドウの高さ. */
-  private int height = Integer.MIN_VALUE;
+  private int height = window.height;
   /** 最大化および最小化されていない状態でのウィンドウの X 座標. */
-  private int posX = Integer.MIN_VALUE;
+  private int posX = window.posX;
   /** 最大化および最小化されていない状態でのウィンドウの Y 座標. */
-  private int posY = Integer.MIN_VALUE;
+  private int posY = window.posY;
   /** ウィンドウが最大化されているかどうか. */
-  private boolean isMaximized = false;
+  private boolean isMaximized = window.maximized;
 
   /** コンストラクタ. */
   public WindowStateManager() {}

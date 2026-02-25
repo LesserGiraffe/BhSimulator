@@ -4,10 +4,10 @@
     "scale": 1.0,
     "window": {
       "width": 1200,
-      "height": 900,
-      "posX": 680,
-      "posY": 246,
-      "maximized": false
+      "height": 696,
+      "posX": 503,
+      "posY": 379,
+      "maximized": true
     }
   }
 }

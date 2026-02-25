@@ -70,13 +70,14 @@ public class BhSimulator implements ApplicationListener {
   private UiComposer uiComposer;
   private SimulatorCmdProcessorImpl cmdProcessor;
   private CustomInputProcessor inputProcessor;
-  private final WindowStateManager windowManager = new WindowStateManager();
+  private final WindowStateManager windowManager;
   private final CountDownLatch latch = new CountDownLatch(1);
 
   /** コンストラクタ. */
   public BhSimulator() throws Exception {
     importSettings();
     buildTextDb();
+    windowManager = new WindowStateManager();
   }
 
   @Override
