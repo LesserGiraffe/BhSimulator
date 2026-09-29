@@ -69,8 +69,8 @@ import org.apache.commons.lang3.mutable.MutableInt;
  */
 public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, UiViewProvider {
  
-  private SceneAsset sceneAsset = new GLBLoader().load(
-      Gdx.files.absolute(BhSimulator.ASSET_PATH + "/Models/Lamp.glb"));
+  private final SceneAsset sceneAsset =
+      new GLBLoader().load(Gdx.files.absolute(BhSimulator.ASSET_PATH + "/Models/Lamp.glb"));
   private final Scene scene;
   private final float scale;
   /** ローカル空間上でのこのオブジェクトの論理的な原点. */

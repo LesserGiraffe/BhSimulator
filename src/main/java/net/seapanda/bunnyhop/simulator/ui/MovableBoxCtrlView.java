@@ -19,7 +19,6 @@ package net.seapanda.bunnyhop.simulator.ui;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.kotcrab.vis.ui.widget.VisImage;
 import com.kotcrab.vis.ui.widget.VisSlider;
 import com.kotcrab.vis.ui.widget.VisTable;
 import net.seapanda.bunnyhop.simulator.BhSimulator;
@@ -46,7 +45,7 @@ public class MovableBoxCtrlView extends VisTable {
   private void addRotationSlider(Box model) {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/rotation.png";
     var size = new Vector2(16f * UiUtil.sclmm, 8.47f * UiUtil.sclmm);
-    this.<VisImage>add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
+    this.add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
 
     VisSlider slider = new VisSlider(0f, 60f, 1f, false);
     slider.setValue(slider.getMaxValue() / 2);
@@ -60,6 +59,6 @@ public class MovableBoxCtrlView extends VisTable {
       }
     };
     slider.addListener(listener);
-    this.<VisSlider>add(slider).width(30f * UiUtil.sclmm);
+    this.add(slider).width(30f * UiUtil.sclmm);
   }
 }

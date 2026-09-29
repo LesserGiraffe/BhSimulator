@@ -48,7 +48,7 @@ public class ModelCtrlView extends VerticalGroup {
 
   private final CustomInputProcessor.AccessHelper accessor;
   /** 選択されたモデルの UI View を子に持つ UI View. */
-  private Container<Actor> viewOfSelectedModel = new Container<>();
+  private final Container<Actor> viewOfSelectedModel = new Container<>();
 
   /**
    * コンストラクタ.
@@ -80,11 +80,11 @@ public class ModelCtrlView extends VerticalGroup {
     table.top().right();
     table.pad(2 * UiUtil.sclmm);
     setBackgroundColorTo(table, viewOfSelectedModel);
-    table.<VisImageButton>add(createBoxButton(accessor, false)).space(2 * UiUtil.sclmm);
-    table.<VisImageButton>add(createBoxButton(accessor, true)).space(2 * UiUtil.sclmm);
+    table.add(createBoxButton(accessor, false)).space(2 * UiUtil.sclmm);
+    table.add(createBoxButton(accessor, true)).space(2 * UiUtil.sclmm);
     table.row();
-    table.<VisImageButton>add(createLampButton(accessor)).space(2 * UiUtil.sclmm);
-    table.<VisImageButton>add(genDeleteButton(accessor)).space(2 * UiUtil.sclmm);
+    table.add(createLampButton(accessor)).space(2 * UiUtil.sclmm);
+    table.add(genDeleteButton(accessor)).space(2 * UiUtil.sclmm);
     table.row();
     table.addListener(event -> true);
     table.setTouchable(Touchable.enabled);

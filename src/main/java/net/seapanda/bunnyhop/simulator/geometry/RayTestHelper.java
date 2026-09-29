@@ -127,7 +127,7 @@ public class RayTestHelper {
           continue;
         }
         var pos = new Vector3().set(result.getHitPointWorld().at(i));
-        return Optional.of(new RayTestResult<Collidable>(obj, pos));
+        return Optional.of(new RayTestResult<>(obj, pos));
       }
     }
     return Optional.empty();
@@ -144,8 +144,8 @@ public class RayTestHelper {
 
   /** ray test の設定を格納するクラス. */
   public static class Config {
-    private Collection<Class<? extends Collidable>> classesToExclude = new ArrayList<>();
-    private Collection<Collidable> objsToExclude = new ArrayList<>();
+    private final Collection<Class<? extends Collidable>> classesToExclude = new ArrayList<>();
+    private final Collection<Collidable> objsToExclude = new ArrayList<>();
     private int mask = 0;
 
     /** ray test の衝突判定から除外するオブジェクトのクラスを追加する. */

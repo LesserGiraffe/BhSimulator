@@ -10,8 +10,8 @@ import net.seapanda.bunnyhop.simulator.obj.ObjectReflection;
 public interface ObjectReflectionProvider extends SimulationObject {
 
   /** この 3D モデルの {@link ObjectReflection} オブジェクトを作成する.*/
-  public ObjectReflection createObjectReflection();
+  ObjectReflection createObjectReflection();
   
   /** この 3D モデルのリソースを共有する他の  {@link ObjectReflection} オブジェクト の数. */
-  public int getNumShared();
+  int getNumShared();
 }

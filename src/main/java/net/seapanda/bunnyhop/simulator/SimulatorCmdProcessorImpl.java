@@ -184,7 +184,7 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
 
     public final String name;
 
-    private Opcode(String name) {
+    Opcode(String name) {
       this.name = name;
     }
   
@@ -204,7 +204,7 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
 
     public final String name;
 
-    private MoveMotion(String name) {
+    MoveMotion(String name) {
       this.name = name;
     }
   
@@ -222,7 +222,7 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
 
     public final String name;
 
-    private Eye(String name) {
+    Eye(String name) {
       this.name = name;
     }
   
@@ -236,7 +236,7 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   private record EyeColors(Color left, Color right) {}
 
   /** コマンドプロセッサに対するイベントハンドラの登録および削除操作を提供するクラス. */
-  public class CallbackRegistryImpl implements CallbackRegistry {
+  public static class CallbackRegistryImpl implements CallbackRegistry {
     
     /** コマンドを処理する直前に呼ばれるイベントハンドラを管理するオブジェクト. */
     private final ConsumerInvoker<CmdProcessingEvent> onCmdProcessingInvoker =

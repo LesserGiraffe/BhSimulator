@@ -29,8 +29,8 @@ public interface SimulatorCmdProcessor {
    *
    * @param cmd 処理するコマンド
    * @param onCmdFinished コマンドの処理が終了したときに呼ばれるメソッド.
-   * 第一引数 : 成否フラグ. (true -> 成功, false -> 失敗) <br>
-   * 第二引数 : コマンドレスポンスgig
+   *     第一引数 : 成否フラグ. (true -> 成功, false -> 失敗) <br>
+   *     第二引数 : コマンドレスポンスgig
    */
   void process(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished);
 
@@ -48,7 +48,7 @@ public interface SimulatorCmdProcessor {
   CallbackRegistry getCallbackRegistry();
 
   /** コマンドプロセッサに対するイベントハンドラの登録および削除操作を規定したインタフェース. */
-  public interface CallbackRegistry {
+  interface CallbackRegistry {
     
     /** コマンドを処理する直前に呼ばれるイベントハンドラのレジストリを取得する. */
     ConsumerInvoker<CmdProcessingEvent>.Registry getOnCmdProcessing();
@@ -59,5 +59,5 @@ public interface SimulatorCmdProcessor {
    *
    * @param cmd 処理するコマンド
    */
-  public record CmdProcessingEvent(String[] cmd) {}
+  record CmdProcessingEvent(String[] cmd) {}
 }

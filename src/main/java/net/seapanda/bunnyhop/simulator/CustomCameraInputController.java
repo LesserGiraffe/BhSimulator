@@ -201,7 +201,7 @@ class CustomCameraInputController extends CameraInputController {
 
   /** カメラの視線を調整してカメラの仰角が正常な範囲に収まるようにする. */
   private void adjustCameraDirection() {
-    float angle = (float) (this.minElevAngle + this.maxElevAngle) / 2f;
+    float angle = (this.minElevAngle + this.maxElevAngle) / 2f;
     float x = camera.direction.x + camera.up.x;
     float y = (float) Math.sin(angle);
     float z = camera.direction.z + camera.up.z;

@@ -53,53 +53,53 @@ public class TextDefs {
 
     /** 色の名前. */
     public static class Color {
-      public static Getter black = params -> db.get(
+      public static final Getter black = params -> db.get(
           TextId.of("obj-ctrl", "color", "black"), params);
 
-      public static Getter red = params -> db.get(
+      public static final Getter red = params -> db.get(
           TextId.of("obj-ctrl", "color", "red"), params);
 
-      public static Getter green = params -> db.get(
+      public static final Getter green = params -> db.get(
           TextId.of("obj-ctrl", "color", "green"), params);
 
-      public static Getter blue = params -> db.get(
+      public static final Getter blue = params -> db.get(
           TextId.of("obj-ctrl", "color", "blue"), params);
 
-      public static Getter magenta = params -> db.get(
+      public static final Getter magenta = params -> db.get(
           TextId.of("obj-ctrl", "color", "magenta"), params);
 
-      public static Getter cyan = params -> db.get(
+      public static final Getter cyan = params -> db.get(
           TextId.of("obj-ctrl", "color", "cyan"), params);
 
-      public static Getter yellow = params -> db.get(
+      public static final Getter yellow = params -> db.get(
           TextId.of("obj-ctrl", "color", "yellow"), params);
 
-      public static Getter white = params -> db.get(
+      public static final Getter white = params -> db.get(
           TextId.of("obj-ctrl", "color", "white"), params);
     }
 
     /** RaspiCar を操作する UI のテキスト. */
     public static class RaspiCar {
-      public static Getter moveSpeed = params -> db.get(
+      public static final Getter moveSpeed = params -> db.get(
           TextId.of("obj-ctrl", "raspi-car", "movement-speed"), params);
 
-      public static Getter moveTime = params -> db.get(
+      public static final Getter moveTime = params -> db.get(
           TextId.of("obj-ctrl", "raspi-car", "movement-time"), params);
 
-      public static Getter leftEye = params -> db.get(
+      public static final Getter leftEye = params -> db.get(
           TextId.of("obj-ctrl", "raspi-car", "left-eye"), params);
 
-      public static Getter rightEye = params -> db.get(
+      public static final Getter rightEye = params -> db.get(
           TextId.of("obj-ctrl", "raspi-car", "right-eye"), params);
 
-      public static Getter bothEyes = params -> db.get(
+      public static final Getter bothEyes = params -> db.get(
           TextId.of("obj-ctrl", "raspi-car", "both-eyes"), params);
     }
   }
 
   /** カメラ操作説明のテキスト. */
   public static class CameraManual {
-    public static Getter moveViewPoint = params -> db.get(
+    public static final Getter moveViewPoint = params -> db.get(
         TextId.of("camera-manual", "move-view-point"), params);
   }
 }

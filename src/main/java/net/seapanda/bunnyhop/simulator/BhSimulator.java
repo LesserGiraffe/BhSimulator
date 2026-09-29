@@ -61,7 +61,7 @@ public class BhSimulator implements ApplicationListener {
     ASSET_PATH = Utility.execPath + Utility.fs + "SimAssets";
   }
 
-  public static String ASSET_PATH;
+  public static final String ASSET_PATH;
 
   private Camera cam;
   private ModelBatch modelBatch;

@@ -24,5 +24,5 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
  * @author K.Koike
  */
 public interface UiViewProvider {
-  public Actor getUiView();
+  Actor getUiView();
 }

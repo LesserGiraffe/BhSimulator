@@ -52,9 +52,9 @@ import org.apache.commons.lang3.mutable.MutableInt;
 public class ObjectReflection implements SimulationObject {
   
   /** 描画対象. */
-  private ModelInstance subject;
+  private final ModelInstance subject;
   /** 不透明度. */
-  private float opacity = 0.5f;
+  private float opacity;
   /** NodePart とその Material のペアを格納する. */
   private final HashMap<NodePart, Material> nodePartToOriginalMaterial = new HashMap<>();
   /** NodePart とその Material のコピーのペアを格納する. */
@@ -136,20 +136,18 @@ public class ObjectReflection implements SimulationObject {
 
   @Override
   public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
-    var orgMatrix = new Matrix4(subject.transform);
+    final var orgMatrix = new Matrix4(subject.transform);
 
     // 位置とマテリアルの書き換え.
     Vector3 renderingPos = renderingPosGetter.apply(pos);
     subject.transform.mul(rotation);
     subject.transform.setTranslation(renderingPos);
-    nodePartToCopiedMaterial.entrySet()
-        .forEach(entry -> entry.getKey().material = entry.getValue());
+    nodePartToCopiedMaterial.forEach((key, value) -> key.material = value);
     // 描画物を提出.
     subject.getRenderables(renderables, pool);
     // 位置とマテリアルを元に戻す.
     subject.transform.set(orgMatrix);
-    nodePartToOriginalMaterial.entrySet()
-        .forEach(entry -> entry.getKey().material = entry.getValue());
+    nodePartToOriginalMaterial.forEach((key, value) -> key.material = value);
   }
 
   @Override

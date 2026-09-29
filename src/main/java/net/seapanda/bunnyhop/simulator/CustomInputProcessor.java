@@ -37,6 +37,7 @@ import net.seapanda.bunnyhop.simulator.obj.ObjectReflection;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.Collidable;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.ObjectReflectionProvider;
+import net.seapanda.bunnyhop.simulator.obj.interfaces.SimulationObject;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
 import net.seapanda.bunnyhop.simulator.ui.ModelCtrlView;
 
@@ -207,7 +208,7 @@ public class CustomInputProcessor extends InputAdapter implements UiViewProvider
 
   /** 選択中の全ての 3D モデルの選択を解除する. */
   private void deselectAll() {
-    selectedModels.forEach(selected -> selected.deselect());
+    selectedModels.forEach(SimulationObject::deselect);
     selectedModels.clear();
   }
 
@@ -247,10 +248,11 @@ public class CustomInputProcessor extends InputAdapter implements UiViewProvider
   /** {@link CustomInputProcessor} のメンバにアクセスするためのヘルパークラス. */
   public class AccessHelper {
 
-    public Runnable fnDeleteSelectedObjects = CustomInputProcessor.this::deleteSelectedObjects;
-    public Consumer<Boolean> fnCreateBox = CustomInputProcessor.this::createBox;
-    public Runnable fnCreateLamp = CustomInputProcessor.this::createLamp;
-    public List<Collidable> selectedModels = CustomInputProcessor.this.selectedModels;
+    public final Runnable fnDeleteSelectedObjects =
+        CustomInputProcessor.this::deleteSelectedObjects;
+    public final Consumer<Boolean> fnCreateBox = CustomInputProcessor.this::createBox;
+    public final Runnable fnCreateLamp = CustomInputProcessor.this::createLamp;
+    public final List<Collidable> selectedModels = CustomInputProcessor.this.selectedModels;
 
     private AccessHelper() {}
   }

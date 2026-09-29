@@ -115,7 +115,7 @@ public class UiComposer implements Disposable {
 
   private static Container<VisImage> genCrosshair() {
     String imgPath = BhSimulator.ASSET_PATH + "/Images/sight.png";
-    Container<VisImage> crosshair = new Container<VisImage>(
+    Container<VisImage> crosshair = new Container<>(
         UiUtil.createUiImage(imgPath, new Vector2(5f * UiUtil.sclmm, 5f * UiUtil.sclmm)));
     crosshair.setFillParent(true);
     return crosshair;
