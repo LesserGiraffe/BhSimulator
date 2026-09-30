@@ -1,0 +1,26 @@
+{
+  "obj-ctrl": {
+    "color": {
+      "black": "くろ",
+      "red": "あか",
+      "green": "みどり",
+      "blue": "あお",
+      "magenta": "むらさき",
+      "cyan": "みずいろ",
+      "yellow": "きいろ",
+      "white": "しろ"
+    },
+
+    "raspi-car": {
+      "movement-speed": "いどうそくど",
+      "movement-time": "いどう時間",
+      "left-eye": "左目",
+      "right-eye": "右目",
+      "both-eyes": "りょう目"
+    }
+  },
+
+  "camera-manual": {
+    "move-view-point": "してんの いどう"
+  }
+}
