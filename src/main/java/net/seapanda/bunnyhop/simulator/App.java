@@ -16,10 +16,21 @@
 
 package net.seapanda.bunnyhop.simulator;
 
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowAdapter;
-import net.seapanda.bunnyhop.simulator.common.BhSimConstants;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import net.seapanda.bunnyhop.simulator.api.BhSimulator;
+import net.seapanda.bunnyhop.simulator.api.BhSimulatorFactory;
+import net.seapanda.bunnyhop.simulator.api.BhSimulatorInfo;
+import net.seapanda.bunnyhop.simulator.api.BhSimulatorSettings;
+import net.seapanda.bunnyhop.simulator.api.SimulatorInitializationException;
+import net.seapanda.bunnyhop.utility.Utility;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -44,21 +55,42 @@ public class App {
       return;
     }
     if (cmd.hasOption("version")) {
-      System.out.println(BhSimConstants.APP_VERSION);
+      System.out.println(BhSimulatorInfo.getVersion());
       return;
     }
+    initializeTextDb();
+    Path settingFilePath = Paths.get(Utility.execPath, "settings", "BhSimSettings.json");
+    BhSimulatorSettings settings = importSettings(settingFilePath.toAbsolutePath().toString());
+    BhSimulator simulator = BhSimulatorFactory.create(settings);
+    simulator.start();
+    exportSettings(settingFilePath.toAbsolutePath().toString(), simulator.getCurrentSettings());
+  }
 
-    var windowListener = new Lwjgl3WindowAdapter() {
-      @Override
-      public boolean closeRequested() {
-        return true;
+  private static void initializeTextDb() throws Exception {
+    Path filePath = Paths.get(Utility.execPath, "language", "Japanese", "BhSimulator.json");
+    BhSimulatorFactory.initializeTextDb(filePath.toAbsolutePath().toString());
+  }
+
+  private static BhSimulatorSettings importSettings(String configFilePath)
+      throws SimulatorInitializationException {
+    var gson = new Gson();
+    try (var jr = gson.newJsonReader(new FileReader(configFilePath))) {
+      return gson.fromJson(jr, BhSimulatorSettings.class);
+    } catch (Exception e) {
+      throw new SimulatorInitializationException(
+          "Failed to import simulator settings.\n(%s)".formatted(configFilePath), e);
+    }
+  }
+
+  private static void exportSettings(String filePath, BhSimulatorSettings settings) {
+    var gson = new GsonBuilder().setPrettyPrinting().create();
+    try {
+      Path path = Paths.get(filePath).toAbsolutePath();
+      Files.createDirectories(path.getParent());
+      try (var jw = gson.newJsonWriter(Files.newBufferedWriter(path, StandardCharsets.UTF_8))) {
+        gson.toJson(settings, new TypeToken<BhSimulatorSettings>(){}.getType(), jw);
       }
-    };
-    var config = new Lwjgl3ApplicationConfiguration();
-    config.setWindowListener(windowListener);
-    config.setWindowedMode(1200, 900);
-    config.setForegroundFPS(60);
-    new Lwjgl3Application(new BhSimulator(), config);
+    } catch (IOException e) { /* Do nothing.*/ }
   }
 
   /** コマンドライン引数をパースする. */

@@ -32,7 +32,6 @@ import com.kotcrab.vis.ui.widget.VisCheckBox;
 import com.kotcrab.vis.ui.widget.VisImage;
 import com.kotcrab.vis.ui.widget.VisLabel;
 import com.kotcrab.vis.ui.widget.VisTable;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.common.TextDefs;
 
 /**
@@ -43,13 +42,13 @@ import net.seapanda.bunnyhop.simulator.common.TextDefs;
 public class CameraManualView extends VisTable {
   
   /** コンストラクタ. */
-  public CameraManualView() {
-    VisCheckBox collapseButton = genCollapseButton();
+  public CameraManualView(UiUtil uiUtil) {
+    VisCheckBox collapseButton = createCollapseButton(uiUtil);
     add(collapseButton).align(Align.topLeft);
     row();  
-    add(genCameraManual(collapseButton)).align(Align.topLeft);
+    add(createCameraManual(collapseButton, uiUtil)).align(Align.topLeft);
     setBackgroundColor();
-    pad(UiUtil.sclmm);
+    pad(uiUtil.sclmm);
   }
 
   /** この UI コンポーネントの背景色を設定する. */
@@ -63,19 +62,19 @@ public class CameraManualView extends VisTable {
   }
 
   /** 視点の操作方法をの表示/非表示を切り替えるボタンを作成する. */
-  private VisCheckBox genCollapseButton() {
+  private VisCheckBox createCollapseButton(UiUtil uiUtil) {
     VisCheckBox collapseButton = new VisCheckBox("");
-    VisLabel label = UiUtil.createLabel(
-        TextDefs.CameraManual.moveViewPoint.get(), 13.2f * UiUtil.sclpt, Color.WHITE);
+    VisLabel label = uiUtil.createLabel(
+        TextDefs.CameraManual.moveViewPoint.get(), 13.2f * uiUtil.sclpt, Color.WHITE);
     collapseButton.add(label);
     return collapseButton;
   }
 
   /** 視点の操作方法を表示する UI コンポーネントを作成する. */
-  private CollapsibleWidget genCameraManual(VisCheckBox collapseButton) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/povCtrl.png";
+  private CollapsibleWidget createCameraManual(VisCheckBox collapseButton, UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/povCtrl.png";
     VisImage manualImg =
-        UiUtil.createUiImage(imgPath, new Vector2(42.35f * UiUtil.sclmm, 53.57f * UiUtil.sclmm));
+        uiUtil.createUiImage(imgPath, new Vector2(42.35f * uiUtil.sclmm, 53.57f * uiUtil.sclmm));
     Table table = new Table();
     table.add(manualImg);
     CollapsibleWidget cw = new CollapsibleWidget(table);

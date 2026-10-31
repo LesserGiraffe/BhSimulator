@@ -16,7 +16,7 @@
 
 package net.seapanda.bunnyhop.simulator.obj;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.Renderable;
@@ -40,11 +40,11 @@ import net.mgsx.gltf.loaders.glb.GLBLoader;
 import net.mgsx.gltf.scene3d.scene.Scene;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
 import net.mgsx.gltf.scene3d.utils.MaterialConverter;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.ObjectReflectionProvider;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.PhysicalEntity;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
 import net.seapanda.bunnyhop.simulator.ui.MovableBoxCtrlView;
+import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 /**
@@ -73,15 +73,16 @@ public class Box
    *
    * @param size 直方体のサイズ
    * @param pos 直方体の底面の中心点の位置
-   * @param isHeavy true の場合, 他のオブジェクトとの衝突などで動きにくくなる.
+   * @param isHeavy true の場合, 重い直方体を作る
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public Box(Vector3 size, Vector3 pos, boolean isHeavy) {
+  public Box(Vector3 size, Vector3 pos, boolean isHeavy, UiUtil uiUtil) {
     this.size = size;
-    scene = createScene(size, pos, isHeavy);
+    scene = createScene(size, pos, isHeavy, uiUtil);
     var motionState = new CustomMotionState(scene.modelInstance.transform);
     btCollisionShape shape = createCollisionShape(size);
     body = createRigidBody(shape, motionState, isHeavy);
-    uiComponent = new MovableBoxCtrlView(this);
+    uiComponent = new MovableBoxCtrlView(this, uiUtil);
   }
 
   private static btCollisionShape createCollisionShape(Vector3 size) {
@@ -94,10 +95,9 @@ public class Box
   }
 
   /** 3D モデルを作成する. */
-  private Scene createScene(Vector3 size, Vector3 pos, boolean isHeavy) {
+  private Scene createScene(Vector3 size, Vector3 pos, boolean isHeavy, UiUtil uiUtil) {
     var modelName = isHeavy ? "/Models/HeavyBox.glb" : "/Models/Dice.glb";
-    SceneAsset sceneAsset = new GLBLoader().load(
-        Gdx.files.absolute(BhSimulator.ASSET_PATH + modelName));
+    SceneAsset sceneAsset = new GLBLoader().load(new FileHandle(uiUtil.assetDir + modelName));
     var scene = new Scene(sceneAsset.scene);
     scene.modelInstance.transform.scale(size.x, size.y, size.z);
     scene.modelInstance.transform.setTranslation(new Vector3(pos).add(0, size.y * 0.5f, 0));

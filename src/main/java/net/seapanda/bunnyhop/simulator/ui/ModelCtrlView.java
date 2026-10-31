@@ -34,8 +34,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.kotcrab.vis.ui.widget.VisImageButton;
 import com.kotcrab.vis.ui.widget.VisTable;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.CustomInputProcessor;
+import net.seapanda.bunnyhop.simulator.CustomInputProcessor.AccessHelper;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.Collidable;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
 
@@ -46,7 +46,7 @@ import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
  */
 public class ModelCtrlView extends VerticalGroup {
 
-  private final CustomInputProcessor.AccessHelper accessor;
+  private final AccessHelper accessor;
   /** 選択されたモデルの UI View を子に持つ UI View. */
   private final Container<Actor> viewOfSelectedModel = new Container<>();
 
@@ -54,16 +54,17 @@ public class ModelCtrlView extends VerticalGroup {
    * コンストラクタ.
    *
    * @param accessor {@link CustomInputProcessor} のメンバにアクセスするためのヘルパークラス.
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public ModelCtrlView(CustomInputProcessor.AccessHelper accessor) {
-    space(2 * UiUtil.sclmm);
+  public ModelCtrlView(AccessHelper accessor, UiUtil uiUtil) {
+    space(2 * uiUtil.sclmm);
     top().right();
     columnRight();
     this.accessor = accessor;
-    addActor(new CameraManualView().top().right());
-    addActor(genModelCreationView());
+    addActor(new CameraManualView(uiUtil).top().right());
+    addActor(createModelCreationView(uiUtil));
     addActor(viewOfSelectedModel);
-    viewOfSelectedModel.pad(2 * UiUtil.sclmm);
+    viewOfSelectedModel.pad(2 * uiUtil.sclmm);
     ClickListener listener = new ClickListener() {
       @Override
       public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -75,16 +76,16 @@ public class ModelCtrlView extends VerticalGroup {
   }
 
   /** モデルの生成と削除機能を提供する UI View を作成する. */
-  private VisTable genModelCreationView() {
+  private VisTable createModelCreationView(UiUtil uiUtil) {
     VisTable table = new VisTable();
     table.top().right();
-    table.pad(2 * UiUtil.sclmm);
+    table.pad(2 * uiUtil.sclmm);
     setBackgroundColorTo(table, viewOfSelectedModel);
-    table.add(createBoxButton(accessor, false)).space(2 * UiUtil.sclmm);
-    table.add(createBoxButton(accessor, true)).space(2 * UiUtil.sclmm);
+    table.add(createBoxButton(accessor, false, uiUtil)).space(2 * uiUtil.sclmm);
+    table.add(createBoxButton(accessor, true, uiUtil)).space(2 * uiUtil.sclmm);
     table.row();
-    table.add(createLampButton(accessor)).space(2 * UiUtil.sclmm);
-    table.add(genDeleteButton(accessor)).space(2 * UiUtil.sclmm);
+    table.add(createLampButton(accessor, uiUtil)).space(2 * uiUtil.sclmm);
+    table.add(createDeleteButton(accessor, uiUtil)).space(2 * uiUtil.sclmm);
     table.row();
     table.addListener(event -> true);
     table.setTouchable(Touchable.enabled);
@@ -103,16 +104,16 @@ public class ModelCtrlView extends VerticalGroup {
   }
 
   /** オブジェクトを削除するボタンを作成する. */
-  private VisImageButton genDeleteButton(CustomInputProcessor.AccessHelper accessor) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/closedTrashbox.png";
-    var size = new Vector2(11 * UiUtil.sclmm, 16 * UiUtil.sclmm);
+  private VisImageButton createDeleteButton(AccessHelper accessor, UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/closedTrashbox.png";
+    var size = new Vector2(11 * uiUtil.sclmm, 16 * uiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         accessor.fnDeleteSelectedObjects.run();
       }
     };
-    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.sclmm, listener);
+    return uiUtil.createUiButton(imgPath, size, 0.5f * uiUtil.sclmm, listener);
   }
 
   /**
@@ -120,31 +121,30 @@ public class ModelCtrlView extends VerticalGroup {
    *
    * @param isHeavy 重い箱を作成するボタンを作る場合 true
    */
-  private VisImageButton createBoxButton(
-      CustomInputProcessor.AccessHelper accessor, boolean isHeavy) {
+  private VisImageButton createBoxButton(AccessHelper accessor, boolean isHeavy, UiUtil uiUtil) {
     String iconName = isHeavy ? "/Images/heavyBox.png" : "/Images/dice.png";
-    String imgPath = BhSimulator.ASSET_PATH + iconName;
-    var size = new Vector2(12 * UiUtil.sclmm, 12.5f * UiUtil.sclmm);
+    String imgPath = uiUtil.assetDir + iconName;
+    var size = new Vector2(12 * uiUtil.sclmm, 12.5f * uiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         accessor.fnCreateBox.accept(isHeavy);
       }
     };
-    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.sclmm, listener);
+    return uiUtil.createUiButton(imgPath, size, 0.5f * uiUtil.sclmm, listener);
   }
 
   /** ランプを作成するボタンを作成する. */
-  private VisImageButton createLampButton(CustomInputProcessor.AccessHelper accessor) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/lamp.png";
-    var size = new Vector2(12 * UiUtil.sclmm, 12 * UiUtil.sclmm);
+  private VisImageButton createLampButton(AccessHelper accessor, UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/lamp.png";
+    var size = new Vector2(12 * uiUtil.sclmm, 12 * uiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         accessor.fnCreateLamp.run();
       }
     };
-    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.sclmm, listener);
+    return uiUtil.createUiButton(imgPath, size, 0.5f * uiUtil.sclmm, listener);
   }
 
   @Override

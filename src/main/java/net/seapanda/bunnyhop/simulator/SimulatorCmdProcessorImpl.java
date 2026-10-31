@@ -20,6 +20,9 @@ import com.badlogic.gdx.graphics.Color;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
+import net.seapanda.bunnyhop.simulator.api.BhSimulatorSettings;
+import net.seapanda.bunnyhop.simulator.api.SimulatorCmdProcessor;
+import net.seapanda.bunnyhop.simulator.api.SimulatorWindow;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar.Motion;
 import net.seapanda.bunnyhop.utility.concurrent.event.ConcurrentConsumerInvoker;
@@ -33,6 +36,8 @@ import net.seapanda.bunnyhop.utility.event.ConsumerInvoker;
 class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   
   private final RaspiCar raspiCar;
+  private final SimulatorWindow window;
+  private final BhSimulatorSettings settings;
   private final Queue<Runnable> actions = new ConcurrentLinkedQueue<>();
   private final CallbackRegistryImpl cbRegistry = new CallbackRegistryImpl();
 
@@ -40,9 +45,14 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
    * コンストラクタ.
    *
    * @param raspiCar コマンドで制御する {@link RaspiCar} オブジェクト
+   * @param window シミュレータのウィンドウを操作するためのオブジェクト
+   * @param settings アプリケーション全体の設定を格納したオブジェクト
    */
-  SimulatorCmdProcessorImpl(RaspiCar raspiCar) {
+  SimulatorCmdProcessorImpl(
+      RaspiCar raspiCar, SimulatorWindow window, BhSimulatorSettings settings) {
     this.raspiCar = raspiCar;
+    this.window = window;
+    this.settings = settings;
   }
 
   /** 未実行のコマンドを処理する. */
@@ -56,6 +66,7 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
   public void process(String[] cmd, BiConsumer<? super Boolean, ? super String[]> onCmdFinished) {
     try {
       String opcode = cmd[0];
+      focusWindowIfNeeded(opcode);
       if (opcode.equals(Opcode.MOVE.name)) {
         cbRegistry.onCmdProcessingInvoker.invoke(new CmdProcessingEvent(cmd));
         move(cmd, onCmdFinished);
@@ -73,6 +84,23 @@ class SimulatorCmdProcessorImpl implements SimulatorCmdProcessor {
       }
     } catch (Throwable e) {
       onCmdFinished.accept(false, new String[] {e.toString()});
+    }
+  }
+
+  /**
+   * 引数で指定したオペコードのコマンドがシミュレータの状態を変化させる場合,
+   * 設定に応じてシミュレータのウィンドウにフォーカスを当てる.
+   *
+   * @param opcode これから処理するコマンドのオペコード
+   */
+  private void focusWindowIfNeeded(String opcode) {
+    if (!settings.focusOnSimulatorChange.get()) {
+      return;
+    }
+    if (opcode.equals(Opcode.MOVE.name) || opcode.equals(Opcode.LIGHT_EYE.name)) {
+      if (!window.isIconified()) {
+        window.focus();
+      }
     }
   }
 

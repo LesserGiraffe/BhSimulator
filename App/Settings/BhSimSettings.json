@@ -1,13 +1,17 @@
 {
   "language": "Japanese",
-  "Ui": {
+  "ui": {
     "scale": 1.0,
-    "window": {
-      "width": 1200,
-      "height": 900,
-      "posX": 360,
-      "posY": 66,
-      "maximized": false
-    }
-  }
+    "x2SkinDpiThreshold": 122.0
+  },
+  "window": {
+    "width": 1256,
+    "height": 571,
+    "posX": 138,
+    "posY": 161,
+    "maximized": false
+  },
+  "closeOnRequested": true,
+  "foregroundFps": 60,
+  "focusOnSimulatorChange": false
 }

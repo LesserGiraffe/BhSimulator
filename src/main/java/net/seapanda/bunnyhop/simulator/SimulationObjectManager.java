@@ -44,6 +44,7 @@ import net.seapanda.bunnyhop.simulator.obj.interfaces.PhysicalEntity;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.SimulationObject;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
 import net.seapanda.bunnyhop.simulator.ui.SimulationObjectManagerView;
+import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 
 /**
  * シミュレーション空間の 3D モデルを管理するクラス.
@@ -54,10 +55,12 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
   
   /** シミュレーション空間に追加可能な 3D モデルの最大数. */
   public static final int MAX_OBJECTS = 30;
+  /** UI 構築のためのユーティリティオブジェクト. */
+  private final UiUtil uiUtil;
   /** シミュレーション空間に存在する 3D モデルを格納するリスト. */
   private final ArrayList<SimulationObject> instances = new ArrayList<>();
-  private final Stage stage = new Stage(1f, new Vector3(0f, 0f, 0f));
-  private final RaspiCar car = new RaspiCar(1f, new Vector3(0f, 0.1f, 0.1f));
+  private final Stage stage;
+  private final RaspiCar car;
   private final RayTestHelper rayTestHelper;
   private final btDiscreteDynamicsWorld dynamicsWorld;
   private final ArrayList<Disposable> disposables = new ArrayList<>();
@@ -69,7 +72,7 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
   /** シミュレーション空間に, 現在追加されている 3D モデルの個数. */
   private int numObjects = 0;
   /** UI のルートコンポーネント. */
-  private final Actor uiComponent = new SimulationObjectManagerView(this);
+  private final Actor uiComponent;
   /**
    * 次の物理シミュレーションの更新で経過する時間を計算するためのオブジェクト.
    *
@@ -79,13 +82,17 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
       new SimulationStepTimeCalculator(1f / 120f, 5);
 
   /** コンストラクタ. */
-  public SimulationObjectManager() {
+  public SimulationObjectManager(UiUtil uiUtil) {
+    this.uiUtil = uiUtil;
+    stage = new Stage(1f, new Vector3(0f, 0f, 0f), uiUtil.assetDir);
+    car = new RaspiCar(1f, new Vector3(0f, 0.1f, 0.1f), uiUtil);
     instances.add(stage);
     instances.add(car);
     dynamicsWorld = createDynamicWorld();
     rayTestHelper = new RayTestHelper(dynamicsWorld);
     stage.addCollisionObjectsTo(dynamicsWorld);
     car.addCollisionObjectsTo(dynamicsWorld);
+    uiComponent = new SimulationObjectManagerView(this, uiUtil);
   }
 
   private btDiscreteDynamicsWorld createDynamicWorld() {
@@ -144,7 +151,7 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
       throw new MaxObjectsExceededException("No more 3D models can be added.");
     }
     float size = isHeavy ? 0.2f : 0.1f;
-    var box = new Box(new Vector3(size, size, size), pos, isHeavy);
+    var box = new Box(new Vector3(size, size, size), pos, isHeavy, uiUtil);
     instances.add(box);
     box.addCollisionObjectsTo(dynamicsWorld);
     ++numObjects;
@@ -162,7 +169,7 @@ public class SimulationObjectManager implements Disposable, UiViewProvider {
     if (numObjects == MAX_OBJECTS) {
       throw new MaxObjectsExceededException("No more 3D models can be added.");
     }
-    var lamp = new Lamp(1f, pos);
+    var lamp = new Lamp(1f, pos, uiUtil);
     instances.add(lamp);
     lamp.addCollisionObjectsTo(dynamicsWorld);
     ++numObjects;

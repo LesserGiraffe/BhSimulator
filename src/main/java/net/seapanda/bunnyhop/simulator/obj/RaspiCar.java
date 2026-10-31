@@ -18,7 +18,7 @@ package net.seapanda.bunnyhop.simulator.obj;
 
 import static com.badlogic.gdx.physics.bullet.collision.btCollisionObject.CollisionFlags.CF_HAS_CONTACT_STIFFNESS_DAMPING;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
@@ -56,7 +56,6 @@ import net.mgsx.gltf.loaders.glb.GLBLoader;
 import net.mgsx.gltf.scene3d.scene.Scene;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
 import net.mgsx.gltf.scene3d.utils.MaterialConverter;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.geometry.GeoUtil;
 import net.seapanda.bunnyhop.simulator.geometry.RayTestHelper;
 import net.seapanda.bunnyhop.simulator.geometry.RayTestHelper.RayTestResult;
@@ -65,6 +64,7 @@ import net.seapanda.bunnyhop.simulator.obj.interfaces.ObjectReflectionProvider;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.PhysicalEntity;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
 import net.seapanda.bunnyhop.simulator.ui.RaspiCarCtrlView;
+import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 /**
@@ -74,8 +74,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
  */
 public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider, UiViewProvider {
 
-  private final SceneAsset sceneAsset = new GLBLoader().load(
-      Gdx.files.absolute(BhSimulator.ASSET_PATH + "/Models/RaspiCar.glb"));
+  private final SceneAsset sceneAsset;
   private final Scene scene;
   /** 本体の衝突判定オブジェクト. */
   private final btRigidBody body;
@@ -136,8 +135,11 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
    *
    * @param scale RaspiCar のサイズ
    * @param pos RaspiCar の底面の中心点の位置
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public RaspiCar(float scale, Vector3 pos) {
+  public RaspiCar(float scale, Vector3 pos, UiUtil uiUtil) {
+    String filePath = uiUtil.assetDir + "/Models/RaspiCar.glb";
+    sceneAsset = new GLBLoader().load(new FileHandle(filePath));
     this.scale = scale;
     scene = createScene(scale, pos);
     btCollisionShape shape = createCollisionShape(scene.modelInstance);
@@ -152,7 +154,7 @@ public class RaspiCar extends PhysicalEntity implements ObjectReflectionProvider
     createAnimDescs();
     defaultRightEyeColor = getRightEyeColor();
     defaultLeftEyeColor = getLeftEyeColor();
-    uiComponent = new RaspiCarCtrlView(this);
+    uiComponent = new RaspiCarCtrlView(this, uiUtil);
   }
 
   /**

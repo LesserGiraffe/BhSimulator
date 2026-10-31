@@ -16,6 +16,7 @@
 
 package net.seapanda.bunnyhop.simulator.ui;
 
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -30,7 +31,6 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.widget.VisImage;
 import com.kotcrab.vis.ui.widget.VisScrollPane;
 import com.kotcrab.vis.ui.widget.VisTable;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 
 /**
  * UI コンポーネントを統合して描画するクラス.
@@ -41,21 +41,23 @@ public class UiComposer implements Disposable {
 
   private final Stage stage = new Stage(new ScreenViewport());
   private final VisTable rhsRoot;
-  private final VisTable lhsRoot;
 
   /**
    * コンストラクタ.
    *
    * @param modelCtrlView 3D モデルの制御を行うビュー
    * @param numSimObjectsView 3D モデルの個数を表示するビュー
+   * @param graphics UI コンポーネントを描画するウィンドウに紐づく {@link Graphics} オブジェクト
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public UiComposer(Actor modelCtrlView, Actor numSimObjectsView) {
-    rhsRoot = genRhsView(modelCtrlView);
-    lhsRoot = genLhsView(numSimObjectsView);
-    stage.addActor(genFpsCounterView());
+  public UiComposer(
+      Actor modelCtrlView, Actor numSimObjectsView, Graphics graphics, UiUtil uiUtil) {
+    rhsRoot = createRhsView(modelCtrlView);
+    VisTable lhsRoot = createLhsView(numSimObjectsView);
+    stage.addActor(createFpsCounterView(graphics, uiUtil));
     stage.addActor(rhsRoot);
     stage.addActor(lhsRoot);
-    stage.addActor(genCrosshair());
+    stage.addActor(createCrosshair(uiUtil));
   }
 
   /** UI コンポーネントを描画する. */
@@ -76,15 +78,15 @@ public class UiComposer implements Disposable {
   }
 
   /** 画面右側に表示するビューを作成する. */
-  private static VisTable genRhsView(Actor view) {
+  private static VisTable createRhsView(Actor view) {
     var table = new VisTable();
     table.top().right();
     table.setFillParent(true);
-    table.add(genScrollPane(view)).align(Align.bottomRight);
+    table.add(createScrollPane(view)).align(Align.bottomRight);
     return table;
   }
 
-  private static VisScrollPane genScrollPane(Actor content) {
+  private static VisScrollPane createScrollPane(Actor content) {
     VisScrollPane scrollPane = new VisScrollPane(content);
     scrollPane.setFadeScrollBars(false);
     scrollPane.setTouchable(Touchable.childrenOnly);
@@ -105,7 +107,7 @@ public class UiComposer implements Disposable {
   }
 
   /** 画面左に表示するビューを作成する. */
-  private static VisTable genLhsView(Actor view) {
+  private static VisTable createLhsView(Actor view) {
     var table = new VisTable();
     table.bottom().left();
     table.setFillParent(true);
@@ -113,16 +115,16 @@ public class UiComposer implements Disposable {
     return table;
   }
 
-  private static Container<VisImage> genCrosshair() {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/sight.png";
+  private static Container<VisImage> createCrosshair(UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/sight.png";
     Container<VisImage> crosshair = new Container<>(
-        UiUtil.createUiImage(imgPath, new Vector2(5f * UiUtil.sclmm, 5f * UiUtil.sclmm)));
+        uiUtil.createUiImage(imgPath, new Vector2(5f * uiUtil.sclmm, 5f * uiUtil.sclmm)));
     crosshair.setFillParent(true);
     return crosshair;
   }
 
-  private static FpsCounterView genFpsCounterView() {
-    var fpsCounterView = new FpsCounterView();
+  private static FpsCounterView createFpsCounterView(Graphics graphics, UiUtil uiUtil) {
+    var fpsCounterView = new FpsCounterView(graphics, uiUtil);
     fpsCounterView.left().top().setFillParent(true);
     return fpsCounterView;
   }

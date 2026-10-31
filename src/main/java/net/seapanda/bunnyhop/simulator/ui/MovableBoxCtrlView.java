@@ -21,7 +21,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.kotcrab.vis.ui.widget.VisSlider;
 import com.kotcrab.vis.ui.widget.VisTable;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.obj.Box;
 
 /**
@@ -36,16 +35,17 @@ public class MovableBoxCtrlView extends VisTable {
   /** コンストラクタ.
    *
    * @param model このコントロールビューで操作する {@link Box} オブジェクト.
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public MovableBoxCtrlView(Box model) {
-    addRotationSlider(model);
+  public MovableBoxCtrlView(Box model, UiUtil uiUtil) {
+    addRotationSlider(model, uiUtil);
   }
 
   /** Yaw 軸周りに回転させるスライダを追加する. */
-  private void addRotationSlider(Box model) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/rotation.png";
-    var size = new Vector2(16f * UiUtil.sclmm, 8.47f * UiUtil.sclmm);
-    this.add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
+  private void addRotationSlider(Box model, UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/rotation.png";
+    var size = new Vector2(16f * uiUtil.sclmm, 8.47f * uiUtil.sclmm);
+    this.add(uiUtil.createUiImage(imgPath, size)).space(2 * uiUtil.sclmm);
 
     VisSlider slider = new VisSlider(0f, 60f, 1f, false);
     slider.setValue(slider.getMaxValue() / 2);
@@ -59,6 +59,6 @@ public class MovableBoxCtrlView extends VisTable {
       }
     };
     slider.addListener(listener);
-    this.add(slider).width(30f * UiUtil.sclmm);
+    this.add(slider).width(30f * uiUtil.sclmm);
   }
 }

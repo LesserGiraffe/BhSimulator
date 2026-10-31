@@ -28,7 +28,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.kotcrab.vis.ui.widget.VisImageButton;
 import com.kotcrab.vis.ui.widget.VisSlider;
 import com.kotcrab.vis.ui.widget.VisTable;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.obj.Lamp;
 
 /**
@@ -44,24 +43,25 @@ public class LampCtrlView extends VisTable {
    * コンストラクタ.
    *
    * @param model このコントロールビューで操作する {@link Lamp} オブジェクト.
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public LampCtrlView(Lamp model) {
-    addRotationSlider(model);
+  public LampCtrlView(Lamp model, UiUtil uiUtil) {
+    addRotationSlider(model, uiUtil);
     row();
-    addLightAngleSlider(model);
+    addLightAngleSlider(model, uiUtil);
     row();
-    addLightRadiusSlider(model);
+    addLightRadiusSlider(model, uiUtil);
     row();
-    addLightHeightSlider(model);
+    addLightHeightSlider(model, uiUtil);
     row();
-    addLightButtons(model);
+    addLightButtons(model, uiUtil);
   }
 
   /** Yaw 軸周りに回転させるスライダを追加する. */
-  private void addRotationSlider(Lamp model) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/rotation.png";
-    var size = new Vector2(16f * UiUtil.sclmm, 8.47f * UiUtil.sclmm);
-    this.add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
+  private void addRotationSlider(Lamp model, UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/rotation.png";
+    var size = new Vector2(16f * uiUtil.sclmm, 8.47f * uiUtil.sclmm);
+    this.add(uiUtil.createUiImage(imgPath, size)).space(2 * uiUtil.sclmm);
 
     VisSlider slider = new VisSlider(0f, 60f, 1f, false);
     slider.setValue(slider.getMaxValue() / 2);
@@ -75,14 +75,14 @@ public class LampCtrlView extends VisTable {
       }
     };
     slider.addListener(listener);
-    this.add(slider).width(30f * UiUtil.sclmm);
+    this.add(slider).width(30f * uiUtil.sclmm);
   }
 
   /** ライトの角度を変えるスライダを追加する. */
-  private void addLightAngleSlider(Lamp model) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/changeLightAngle.png";
-    var size = new Vector2(16f * UiUtil.sclmm, 10.44f * UiUtil.sclmm);
-    this.add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
+  private void addLightAngleSlider(Lamp model, UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/changeLightAngle.png";
+    var size = new Vector2(16f * uiUtil.sclmm, 10.44f * uiUtil.sclmm);
+    this.add(uiUtil.createUiImage(imgPath, size)).space(2 * uiUtil.sclmm);
 
     VisSlider slider = new VisSlider(-10f, 10f, 1f, false);
     slider.setValue(0f);
@@ -94,14 +94,14 @@ public class LampCtrlView extends VisTable {
       }
     };
     slider.addListener(listener);
-    this.add(slider).width(30f * UiUtil.sclmm);
+    this.add(slider).width(30f * uiUtil.sclmm);
   }
 
   /** ライトの半径を変えるスライダを追加する. */
-  private void addLightRadiusSlider(Lamp model) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/changeLightRadius.png";
-    var size = new Vector2(16f * UiUtil.sclmm, 10f * UiUtil.sclmm);
-    this.add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
+  private void addLightRadiusSlider(Lamp model, UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/changeLightRadius.png";
+    var size = new Vector2(16f * uiUtil.sclmm, 10f * uiUtil.sclmm);
+    this.add(uiUtil.createUiImage(imgPath, size)).space(2 * uiUtil.sclmm);
 
     VisSlider slider = new VisSlider(-10f, 20f, 1f, false);
     slider.setValue(0f);
@@ -115,14 +115,14 @@ public class LampCtrlView extends VisTable {
       }
     };
     slider.addListener(listener);
-    this.add(slider).width(30f * UiUtil.sclmm);
+    this.add(slider).width(30f * uiUtil.sclmm);
   }
 
   /** ライトの高さを変えるスライダを追加する. */
-  private void addLightHeightSlider(Lamp model) {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/changeLightHeight.png";
-    var size = new Vector2(16f * UiUtil.sclmm, 11.75f * UiUtil.sclmm);
-    this.add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
+  private void addLightHeightSlider(Lamp model, UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/changeLightHeight.png";
+    var size = new Vector2(16f * uiUtil.sclmm, 11.75f * uiUtil.sclmm);
+    this.add(uiUtil.createUiImage(imgPath, size)).space(2 * uiUtil.sclmm);
 
     VisSlider slider = new VisSlider(0f, 30f, 1f, false);
     slider.setValue(0f);
@@ -136,20 +136,19 @@ public class LampCtrlView extends VisTable {
       }
     };
     slider.addListener(listener);
-    this.add(slider).width(30f * UiUtil.sclmm);
+    this.add(slider).width(30f * uiUtil.sclmm);
   }
 
   /** ライトの色を変えるボタンを追加する. */
-  private void addLightColorButton(
-      Lamp model, Color color, VisTable base) {
+  private void addLightColorButton(Lamp model, Color color, VisTable base, UiUtil uiUtil) {
     var pixmap = new Pixmap(1, 1, Format.RGBA8888);
     pixmap.setColor(color);
     pixmap.fill();
     var sprite = new Sprite(new Texture(pixmap));
-    sprite.setSize(8f * UiUtil.sclmm, 8f * UiUtil.sclmm);
+    sprite.setSize(8f * uiUtil.sclmm, 8f * uiUtil.sclmm);
     var drawable = new SpriteDrawable(sprite);
     VisImageButton btn = new VisImageButton(drawable);
-    btn.pad(2f * UiUtil.sclmm);
+    btn.pad(2f * uiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
@@ -158,19 +157,19 @@ public class LampCtrlView extends VisTable {
       }
     };
     btn.addListener(listener);
-    base.add(btn).space(2f * UiUtil.sclmm);
+    base.add(btn).space(2f * uiUtil.sclmm);
   }
 
   /** ライトを消すボタンを追加する. */
-  private void addLightOffButton(Lamp model, VisTable base) {
+  private void addLightOffButton(Lamp model, VisTable base, UiUtil uiUtil) {
     var pixmap = new Pixmap(1, 1, Format.RGBA8888);
     pixmap.setColor(Color.BLACK);
     pixmap.fill();
     var sprite = new Sprite(new Texture(pixmap));
-    sprite.setSize(8f * UiUtil.sclmm, 8f * UiUtil.sclmm);
+    sprite.setSize(8f * uiUtil.sclmm, 8f * uiUtil.sclmm);
     var drawable = new SpriteDrawable(sprite);
     VisImageButton btn = new VisImageButton(drawable);
-    btn.pad(2f * UiUtil.sclmm);
+    btn.pad(2f * uiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
@@ -178,21 +177,21 @@ public class LampCtrlView extends VisTable {
       }
     };
     btn.addListener(listener);
-    base.add(btn).space(2f * UiUtil.sclmm);
+    base.add(btn).space(2f * uiUtil.sclmm);
   }
 
-  private void addLightButtons(Lamp model) {
+  private void addLightButtons(Lamp model, UiUtil uiUtil) {
     VisTable buttonBase = new VisTable();
-    this.add(buttonBase).colspan(2).padTop(1.5f * UiUtil.sclmm);
-    addLightColorButton(model, Color.RED, buttonBase);
-    addLightColorButton(model, Color.GREEN, buttonBase);
-    addLightColorButton(model, Color.BLUE, buttonBase);
+    this.add(buttonBase).colspan(2).padTop(1.5f * uiUtil.sclmm);
+    addLightColorButton(model, Color.RED, buttonBase, uiUtil);
+    addLightColorButton(model, Color.GREEN, buttonBase, uiUtil);
+    addLightColorButton(model, Color.BLUE, buttonBase, uiUtil);
     buttonBase.row();
-    addLightColorButton(model, Color.YELLOW, buttonBase);
-    addLightColorButton(model, Color.CYAN, buttonBase);
-    addLightColorButton(model, Color.MAGENTA, buttonBase);
+    addLightColorButton(model, Color.YELLOW, buttonBase, uiUtil);
+    addLightColorButton(model, Color.CYAN, buttonBase, uiUtil);
+    addLightColorButton(model, Color.MAGENTA, buttonBase, uiUtil);
     buttonBase.row();
-    addLightColorButton(model, Color.WHITE, buttonBase);
-    addLightOffButton(model, buttonBase);
+    addLightColorButton(model, Color.WHITE, buttonBase, uiUtil);
+    addLightOffButton(model, buttonBase, uiUtil);
   }
 }

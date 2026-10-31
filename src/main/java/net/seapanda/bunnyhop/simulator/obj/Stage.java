@@ -16,7 +16,7 @@
 
 package net.seapanda.bunnyhop.simulator.obj;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -39,7 +39,6 @@ import net.mgsx.gltf.loaders.glb.GLBLoader;
 import net.mgsx.gltf.scene3d.scene.Scene;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
 import net.mgsx.gltf.scene3d.utils.MaterialConverter;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.geometry.GeoUtil;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.Collidable;
 
@@ -51,8 +50,7 @@ import net.seapanda.bunnyhop.simulator.obj.interfaces.Collidable;
 public class Stage extends Collidable {
  
   private final btRigidBody body;
-  private final SceneAsset sceneAsset = new GLBLoader().load(
-      Gdx.files.absolute(BhSimulator.ASSET_PATH + "/Models/Stage.glb"));
+  private final SceneAsset sceneAsset;
   private final Scene scene;
   private final Vector3 pos;
   private final Vector3 size = new Vector3(48.09744f, 0f, 48.09744f);
@@ -69,10 +67,13 @@ public class Stage extends Collidable {
    *
    * @param scale 3D モデルのスケール
    * @param pos  地面の上面の中心の位置
+   * @param assetDirPath シミュレータのアセットが存在するディレクトリのパス
    */
-  public Stage(float scale, Vector3 pos) {
+  public Stage(float scale, Vector3 pos, String assetDirPath) {
     this.pos = pos;
     size.scl(scale);
+    String filePath = assetDirPath + "/Models/Stage.glb";
+    sceneAsset = new GLBLoader().load(new FileHandle(filePath));
     scene = createScene(scale, pos);
     btCollisionShape shape = createCollisionShape(scene.modelInstance);
     var motionState = new CustomMotionState(scene.modelInstance.transform);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.seapanda.bunnyhop.simulator;
+package net.seapanda.bunnyhop.simulator.api;
 
 import java.util.function.BiConsumer;
 import net.seapanda.bunnyhop.utility.event.ConsumerInvoker;

@@ -16,7 +16,7 @@
 
 package net.seapanda.bunnyhop.simulator.ui;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -25,24 +25,27 @@ import com.kotcrab.vis.ui.widget.VisTable;
 /** 現在の 1 秒あたりのフレーム数を表示する View. */
 public class FpsCounterView extends VisTable {
 
-  private Label fps;
+  private final Label fps;
+  private final Graphics graphics;
 
   /** コンストラクタ. */
-  public FpsCounterView() {
-    addLabel();
-    this.pad(2 * UiUtil.sclmm);
+  public FpsCounterView(Graphics graphics, UiUtil uiUtil) {
+    this.graphics = graphics;
+    fps = createLabel(uiUtil);
+    pad(2 * uiUtil.sclmm);
   }
 
-  private void addLabel() {
-    fps = this.add("").getActor();
+  private Label createLabel(UiUtil uiUtil) {
+    Label fps = this.add("").getActor();
     Label.LabelStyle style = new Label.LabelStyle(fps.getStyle());
-    style.font = UiUtil.createFont(" 0123456789.FPS=", 15 * UiUtil.sclpt, Color.WHITE);
+    style.font = uiUtil.createFont(" 0123456789.FPS=", 15 * uiUtil.sclpt, Color.WHITE);
     fps.setStyle(style);
+    return fps;
   }
 
   @Override
   public void draw(Batch batch, float parentAlpha) {
-    fps.setText(" FPS = " + Gdx.graphics.getFramesPerSecond());
+    fps.setText(" FPS = " + graphics.getFramesPerSecond());
     super.draw(batch, parentAlpha);
   }
 }

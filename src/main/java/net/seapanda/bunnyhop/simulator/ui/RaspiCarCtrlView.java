@@ -42,7 +42,6 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.common.TextDefs;
 import net.seapanda.bunnyhop.simulator.obj.RaspiCar;
 import org.apache.commons.lang3.StringUtils;
@@ -78,29 +77,30 @@ public class RaspiCarCtrlView extends VisTable {
    * コンストラクタ.
    *
    * @param model このコントロールビューで操作する {@link RaspiCar} オブジェクト.
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public RaspiCarCtrlView(RaspiCar model) {
+  public RaspiCarCtrlView(RaspiCar model, UiUtil uiUtil) {
     this.model = model;
-    addRotationSlider();
+    addRotationSlider(uiUtil);
     row();
-    addSpeedLevelSelector();
+    addSpeedLevelSelector(uiUtil);
     row();
-    addMoveTimeSelector();
+    addMoveTimeSelector(uiUtil);
     row();
-    addMoveController();
+    addMoveController(uiUtil);
     row();
-    addDistanceRuler();
+    addDistanceRuler(uiUtil);
     row();
-    addColorPicker();
+    addColorPicker(uiUtil);
     row();
-    addEyeColorSelector();
+    addEyeColorSelector(uiUtil);
   }
 
   /** Yaw 軸周りに回転させるスライダを追加する. */
-  private void addRotationSlider() {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/rotation.png";
-    var size = new Vector2(16f * UiUtil.sclmm, 8.47f * UiUtil.sclmm);
-    this.add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
+  private void addRotationSlider(UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/rotation.png";
+    var size = new Vector2(16f * uiUtil.sclmm, 8.47f * uiUtil.sclmm);
+    this.add(uiUtil.createUiImage(imgPath, size)).space(2 * uiUtil.sclmm);
 
     VisSlider slider = new VisSlider(0f, 60f, 1f, false);
     slider.setValue(slider.getMaxValue() / 2);
@@ -114,58 +114,59 @@ public class RaspiCarCtrlView extends VisTable {
       }
     };
     slider.addListener(listener);
-    this.add(slider).width(30f * UiUtil.sclmm);
+    this.add(slider).width(30f * uiUtil.sclmm);
   }
 
   /** 移動操作を行う UI コンポーネントを追加する. */
-  private void addMoveController() {
+  private void addMoveController(UiUtil uiUtil) {
     var movePane = new VisTable();
     // 前進
-    VisImageButton button = genMoveButton(model::moveForward, "keyW.png");
+    VisImageButton button = createMoveButton(model::moveForward, "keyW.png", uiUtil);
     movePane.add(button).colspan(3);
     movePane.row();
     // 左回転
-    button = genMoveButton(model::turnLeft, "keyA.png");
+    button = createMoveButton(model::turnLeft, "keyA.png", uiUtil);
     movePane.add(button);
     // RaspiCar 画像
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/" + "raspicarMove.png";
-    var size = new Vector2(25 * UiUtil.sclmm, 22f * UiUtil.sclmm);
-    VisImage image = UiUtil.createUiImage(imgPath, size);
-    movePane.add(image).space(0.5f * UiUtil.sclmm);
+    String imgPath = uiUtil.assetDir + "/Images/raspicarMove.png";
+    var size = new Vector2(25 * uiUtil.sclmm, 22f * uiUtil.sclmm);
+    VisImage image = uiUtil.createUiImage(imgPath, size);
+    movePane.add(image).space(0.5f * uiUtil.sclmm);
     // 右回転
-    button = genMoveButton(model::turnRight, "keyD.png");
+    button = createMoveButton(model::turnRight, "keyD.png", uiUtil);
     movePane.add(button);
     movePane.row();
     // 後退
-    button = genMoveButton(model::moveBackward, "keyS.png");
+    button = createMoveButton(model::moveBackward, "keyS.png", uiUtil);
     movePane.add("");
     movePane.add(button).top();
     // 停止
-    movePane.add(genStopController()).padTop(-5 * UiUtil.sclmm);
+    movePane.add(createStopController(uiUtil)).padTop(-5 * uiUtil.sclmm);
     // 移動操作を行う UI コンポーネントを親要素に追加
-    this.add(movePane).space(2 * UiUtil.sclmm).colspan(2);
+    this.add(movePane).space(2 * uiUtil.sclmm).colspan(2);
   }
 
   /** 移動ボタンを作成する. */
-  private VisImageButton genMoveButton(BiConsumer<Float, Float> fnMove, String imgFileName) {
+  private VisImageButton createMoveButton(
+      BiConsumer<Float, Float> fnMove, String imgFileName, UiUtil uiUtil) {
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         fnMove.accept((float) speedLevel, moveTime);
       }
     };
-    var size = new Vector2(10.9f * UiUtil.sclmm, 10.9f * UiUtil.sclmm);
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/" + imgFileName;
-    return UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.sclmm, listener);
+    var size = new Vector2(10.9f * uiUtil.sclmm, 10.9f * uiUtil.sclmm);
+    String imgPath = uiUtil.assetDir + "/Images/" + imgFileName;
+    return uiUtil.createUiButton(imgPath, size, 0.5f * uiUtil.sclmm, listener);
   }
 
   /** 移動停止を行う UI 部品を作成する. */
-  private VisTable genStopController() {
+  private VisTable createStopController(UiUtil uiUtil) {
     var stopPane = new VisTable();
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/" + "stopMoving.png";
-    var size = new Vector2(10f * UiUtil.sclmm, 10f * UiUtil.sclmm);
-    VisImage image = UiUtil.createUiImage(imgPath, size);
-    stopPane.add(image).padBottom(1 * UiUtil.sclmm);
+    String imgPath = uiUtil.assetDir + "/Images/stopMoving.png";
+    var size = new Vector2(10f * uiUtil.sclmm, 10f * uiUtil.sclmm);
+    VisImage image = uiUtil.createUiImage(imgPath, size);
+    stopPane.add(image).padBottom(1 * uiUtil.sclmm);
     stopPane.row();
 
     ChangeListener listener = new ChangeListener() {
@@ -174,17 +175,17 @@ public class RaspiCarCtrlView extends VisTable {
         model.stopMoving();
       }
     };
-    size = new Vector2(10.9f * UiUtil.sclmm, 10.9f * UiUtil.sclmm);
-    imgPath = BhSimulator.ASSET_PATH + "/Images/" + "keyF.png";
-    VisImageButton button = UiUtil.createUiButton(imgPath, size, 0.5f * UiUtil.sclmm, listener);
+    size = new Vector2(10.9f * uiUtil.sclmm, 10.9f * uiUtil.sclmm);
+    imgPath = uiUtil.assetDir + "/Images/keyF.png";
+    VisImageButton button = uiUtil.createUiButton(imgPath, size, 0.5f * uiUtil.sclmm, listener);
     stopPane.add(button);
     return stopPane;
   }
 
   /** 移動速度選択コンポーネントを追加する. */
-  private void addSpeedLevelSelector() {
-    VisLabel label = UiUtil.createLabel(
-        TextDefs.ObjCtrl.RaspiCar.moveSpeed.get(), 13.2f * UiUtil.sclpt, Color.WHITE);
+  private void addSpeedLevelSelector(UiUtil uiUtil) {
+    VisLabel label = uiUtil.createLabel(
+        TextDefs.ObjCtrl.RaspiCar.moveSpeed.get(), 13.2f * uiUtil.sclpt, Color.WHITE);
     this.add(label);
     var intModel = new IntSpinnerModel(speedLevel, 1, 10);
     var speedSel = new Spinner("", intModel);
@@ -194,13 +195,13 @@ public class RaspiCarCtrlView extends VisTable {
         speedLevel = intModel.getValue();  
       }
     });
-    this.add(speedSel).space(2 * UiUtil.sclmm);
+    this.add(speedSel).space(2 * uiUtil.sclmm);
   }
 
   /** 移動時間選択コンポーネントを追加する. */
-  private void addMoveTimeSelector() {
-    VisLabel label = UiUtil.createLabel(
-        TextDefs.ObjCtrl.RaspiCar.moveTime.get(), 13.2f * UiUtil.sclpt, Color.WHITE);
+  private void addMoveTimeSelector(UiUtil uiUtil) {
+    VisLabel label = uiUtil.createLabel(
+        TextDefs.ObjCtrl.RaspiCar.moveTime.get(), 13.2f * uiUtil.sclpt, Color.WHITE);
     this.add(label);
     var floatModel = new SimpleFloatSpinnerModel(moveTime, 0.5f, 10f, 0.5f);
     var moveTimeSel = new Spinner("", floatModel);
@@ -210,15 +211,15 @@ public class RaspiCarCtrlView extends VisTable {
         moveTime = floatModel.getValue();  
       }
     });
-    this.add(moveTimeSel).space(2 * UiUtil.sclmm);
+    this.add(moveTimeSel).space(2 * uiUtil.sclmm);
   }
 
   /** 前方の障害物までの距離を測る UI コンポーネントを追加する. */
-  private void addDistanceRuler() {
+  private void addDistanceRuler(UiUtil uiUtil) {
     VisTextField textField = new VisTextField("");
     textField.setDisabled(true);
     VisTextFieldStyle style = textField.getStyle();
-    style.font = UiUtil.createFont("0123456789. cm", 13.2f * UiUtil.sclpt, Color.WHITE);
+    style.font = uiUtil.createFont("0123456789. cm", 13.2f * uiUtil.sclpt, Color.WHITE);
     style.disabledFontColor = Color.WHITE;
     textField.setStyle(style);
 
@@ -229,30 +230,30 @@ public class RaspiCarCtrlView extends VisTable {
         textField.setText(new DecimalFormat("#.#").format(distance) + " cm");
       }
     };
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/ruler.png";
-    VisImageButton btn = UiUtil.createUiButton(
-        imgPath, new Vector2(14f * UiUtil.sclmm, 8f * UiUtil.sclmm), UiUtil.sclmm, listener);
-    this.add(btn).space(2f * UiUtil.sclmm);
-    this.add(textField).width(25f * UiUtil.sclmm);
+    String imgPath = uiUtil.assetDir + "/Images/ruler.png";
+    VisImageButton btn = uiUtil.createUiButton(
+        imgPath, new Vector2(14f * uiUtil.sclmm, 8f * uiUtil.sclmm), uiUtil.sclmm, listener);
+    this.add(btn).space(2f * uiUtil.sclmm);
+    this.add(textField).width(25f * uiUtil.sclmm);
   }
 
   /** 目の色を選択する UI コンポーネントを追加する. */
-  private void addEyeColorSelector() {
-    addEyeSelector();
+  private void addEyeColorSelector(UiUtil uiUtil) {
+    addEyeSelector(uiUtil);
     VisTable btnTable = new VisTable();
     Color[] colors = { Color.RED, Color.GREEN, Color.BLUE, Color.CYAN };
     for (var color : colors) {
-      btnTable.add(genLightColorButton(color)).space(UiUtil.sclmm);
+      btnTable.add(createLightColorButton(color, uiUtil)).space(uiUtil.sclmm);
     }
     btnTable.row();
     colors = new Color[] { Color.MAGENTA, Color.YELLOW, Color.WHITE, Color.BLACK };
     for (var color : colors) {
-      btnTable.add(genLightColorButton(color)).space(UiUtil.sclmm);
+      btnTable.add(createLightColorButton(color, uiUtil)).space(uiUtil.sclmm);
     }
     this.add(btnTable);
   }
 
-  private void addEyeSelector() {
+  private void addEyeSelector(UiUtil uiUtil) {
     eyeSelector = new VisSelectBox<>();
     String[] eyeNames = {
         TextDefs.ObjCtrl.RaspiCar.bothEyes.get(),
@@ -264,22 +265,22 @@ public class RaspiCarCtrlView extends VisTable {
       new EyeToSetFunc(eyeNames[1], model::setRightEyeColor),
       new EyeToSetFunc(eyeNames[2], model::setLeftEyeColor));
     var style = new SelectBoxStyle(eyeSelector.getStyle());
-    style.font = UiUtil.createFont(StringUtils.join(eyeNames), 13.2f * UiUtil.sclpt, Color.WHITE);
+    style.font = uiUtil.createFont(StringUtils.join(eyeNames), 13.2f * uiUtil.sclpt, Color.WHITE);
     style.listStyle.font = style.font;
     eyeSelector.setStyle(style);
-    this.add(eyeSelector).space(2f * UiUtil.sclmm);
+    this.add(eyeSelector).space(2f * uiUtil.sclmm);
   }
 
   /** 目の色を選択するボタンを追加する. */
-  private VisImageButton genLightColorButton(Color color) {
+  private VisImageButton createLightColorButton(Color color, UiUtil uiUtil) {
     var pixmap = new Pixmap(1, 1, Format.RGBA8888);
     pixmap.setColor(color);
     pixmap.fill();
     var sprite = new Sprite(new Texture(pixmap));
-    sprite.setSize(5f * UiUtil.sclmm, 5f * UiUtil.sclmm);
+    sprite.setSize(5f * uiUtil.sclmm, 5f * uiUtil.sclmm);
     var drawable = new SpriteDrawable(sprite);
     VisImageButton btn = new VisImageButton(drawable);
-    btn.pad(UiUtil.sclmm);
+    btn.pad(uiUtil.sclmm);
     ChangeListener listener = new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
@@ -289,6 +290,30 @@ public class RaspiCarCtrlView extends VisTable {
     };
     btn.addListener(listener);
     return btn;
+  }
+
+  /** 色センサの値を取得する UI コンポーネントを追加する. */
+  private void addColorPicker(UiUtil uiUtil) {
+    VisTextField textField = new VisTextField("");
+    textField.setDisabled(true);
+    var style = new VisTextFieldStyle(textField.getStyle());
+    style.disabledFontColor = Color.WHITE;
+    String colorChars = StringUtils.join(colorToName.values().toArray(new String[0]));
+    style.font = uiUtil.createFont(colorChars, 13.2f * uiUtil.sclpt, Color.WHITE);
+    textField.setStyle(style);
+
+    ChangeListener listener = new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        String colorName = colorToName.getOrDefault(model.detectColor(), "");
+        textField.setText(colorName);
+      }
+    };
+    String imgPath = uiUtil.assetDir + "/Images/colorPicker.png";
+    VisImageButton btn = uiUtil.createUiButton(
+        imgPath, new Vector2(9f * uiUtil.sclmm, 9f * uiUtil.sclmm), uiUtil.sclmm, listener);
+    this.add(btn).space(2 * uiUtil.sclmm);
+    this.add(textField).width(25 * uiUtil.sclmm);
   }
 
   /** {@code keycode} に応じて {@link RaspiCar} を操作する. */
@@ -310,30 +335,6 @@ public class RaspiCarCtrlView extends VisTable {
       return true;
     }
     return false;
-  }
-
-  /** 色センサの値を取得する UI コンポーネントを追加する. */
-  private void addColorPicker() {
-    VisTextField textField = new VisTextField("");
-    textField.setDisabled(true);
-    var style = new VisTextFieldStyle(textField.getStyle());
-    style.disabledFontColor = Color.WHITE;
-    String colorChars = StringUtils.join(colorToName.values().toArray(new String[0]));
-    style.font = UiUtil.createFont(colorChars, 13.2f * UiUtil.sclpt, Color.WHITE);
-    textField.setStyle(style);
-
-    ChangeListener listener = new ChangeListener() {
-      @Override
-      public void changed(ChangeEvent event, Actor actor) {
-        String colorName = colorToName.getOrDefault(model.detectColor(), "");
-        textField.setText(colorName);
-      }
-    };
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/colorPicker.png";
-    VisImageButton btn = UiUtil.createUiButton(
-        imgPath, new Vector2(9f * UiUtil.sclmm, 9f * UiUtil.sclmm), UiUtil.sclmm, listener);
-    this.add(btn).space(2 * UiUtil.sclmm);
-    this.add(textField).width(25 * UiUtil.sclmm);
   }
 
   record EyeToSetFunc(String eyeName, Consumer<Color> fnSetEyeColor) {

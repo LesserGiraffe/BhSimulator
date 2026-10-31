@@ -40,6 +40,7 @@ import net.seapanda.bunnyhop.simulator.obj.interfaces.ObjectReflectionProvider;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.SimulationObject;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
 import net.seapanda.bunnyhop.simulator.ui.ModelCtrlView;
+import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 
 /**
  * マウスとキーの入力操作を処理するクラス.
@@ -62,7 +63,7 @@ public class CustomInputProcessor extends InputAdapter implements UiViewProvider
   /** 押されたキー. */
   private int keyPressed = -1;
   /** UI のルートコンポーネント. */
-  private final Actor uiComponent = new ModelCtrlView(new AccessHelper());
+  private final Actor uiComponent;
   /** キーが押されたときに呼び出すコールバックメソッド. */
   private final AtomicReference<Consumer<Integer>> onKeyPressed =
       new AtomicReference<>(keyCode -> {});
@@ -70,13 +71,15 @@ public class CustomInputProcessor extends InputAdapter implements UiViewProvider
   /**
    * コンストラクタ.
    *
-   * @param camCtrl       シミュレーション空間のカメラを制御するオブジェクト.
-   * @param simObjManager シミュレーション空間の 3D モデルを管理するオブジェクト.
+   * @param camCtrl シミュレーション空間のカメラを制御するオブジェクト
+   * @param simObjManager シミュレーション空間の 3D モデルを管理するオブジェクト
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
   public CustomInputProcessor(
-        CameraInputController camCtrl, SimulationObjectManager simObjManager) {
+        CameraInputController camCtrl, SimulationObjectManager simObjManager, UiUtil uiUtil) {
     this.cameraCtrl = camCtrl;
     this.simObjManager = simObjManager;
+    uiComponent = new ModelCtrlView(new AccessHelper(), uiUtil);
   }
 
   @Override
@@ -239,9 +242,9 @@ public class CustomInputProcessor extends InputAdapter implements UiViewProvider
   }
 
   /** キーが押された時のイベントハンドラを設定する. */
-  public void setOnKeyPressed(Consumer<Integer> onKeyPressed) {
-    if (onKeyPressed != null) {
-      this.onKeyPressed.set(onKeyPressed);
+  public void setOnKeyPressed(Consumer<Integer> handler) {
+    if (handler != null) {
+      onKeyPressed.set(handler);
     }
   }
 

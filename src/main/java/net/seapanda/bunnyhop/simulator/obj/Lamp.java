@@ -16,7 +16,7 @@
 
 package net.seapanda.bunnyhop.simulator.obj;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
@@ -54,12 +54,12 @@ import net.mgsx.gltf.loaders.glb.GLBLoader;
 import net.mgsx.gltf.scene3d.scene.Scene;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
 import net.mgsx.gltf.scene3d.utils.MaterialConverter;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.geometry.GeoUtil;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.ObjectReflectionProvider;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.PhysicalEntity;
 import net.seapanda.bunnyhop.simulator.obj.interfaces.UiViewProvider;
 import net.seapanda.bunnyhop.simulator.ui.LampCtrlView;
+import net.seapanda.bunnyhop.simulator.ui.UiUtil;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 /**
@@ -69,8 +69,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
  */
 public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, UiViewProvider {
  
-  private final SceneAsset sceneAsset =
-      new GLBLoader().load(Gdx.files.absolute(BhSimulator.ASSET_PATH + "/Models/Lamp.glb"));
+  private final SceneAsset sceneAsset;
   private final Scene scene;
   private final float scale;
   /** ローカル空間上でのこのオブジェクトの論理的な原点. */
@@ -108,8 +107,11 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
    *
    * @param scale 3D モデルのスケール
    * @param pos 3D モデルの底面の中心点の位置
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public Lamp(float scale, Vector3 pos) {
+  public Lamp(float scale, Vector3 pos, UiUtil uiUtil) {
+    String filePath = uiUtil.assetDir + "/Models/Lamp.glb";
+    sceneAsset = new GLBLoader().load(new FileHandle(filePath));
     this.scale = scale;
     scene = createScene(scale, pos);
     lightSourcePos = calcLightSourcePos(scene.modelInstance);
@@ -125,7 +127,7 @@ public class Lamp extends PhysicalEntity implements ObjectReflectionProvider, Ui
           .mulLeft(worldTrans);
       lightCollisionObj.setWorldTransform(trans);
     });
-    uiComponent = new LampCtrlView(this);
+    uiComponent = new LampCtrlView(this, uiUtil);
   }
 
   /** 3D モデルを作成する. */

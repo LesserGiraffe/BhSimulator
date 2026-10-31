@@ -22,7 +22,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.kotcrab.vis.ui.widget.VisTable;
-import net.seapanda.bunnyhop.simulator.BhSimulator;
 import net.seapanda.bunnyhop.simulator.SimulationObjectManager;
 
 /** {@link SimulationObjectManager} が保持する情報を表示する View. */
@@ -36,24 +35,25 @@ public class SimulationObjectManagerView extends VisTable {
    * コンストラクタ.
    *
    * @param simObjManager シミュレーション空間の 3D モデルを管理するオブジェクト.
+   * @param uiUtil UI 構築のためのユーティリティオブジェクト
    */
-  public SimulationObjectManagerView(SimulationObjectManager simObjManager) {
+  public SimulationObjectManagerView(SimulationObjectManager simObjManager, UiUtil uiUtil) {
     this.simObjManager = simObjManager;
-    addImage();
-    addLabel();
-    this.pad(2 * UiUtil.sclmm);
+    addImage(uiUtil);
+    addLabel(uiUtil);
+    this.pad(2 * uiUtil.sclmm);
   }
 
-  private void addImage() {
-    String imgPath = BhSimulator.ASSET_PATH + "/Images/box.png";
-    var size = new Vector2(12.7f * UiUtil.sclmm, 13.48f * UiUtil.sclmm);
-    this.add(UiUtil.createUiImage(imgPath, size)).space(2 * UiUtil.sclmm);
+  private void addImage(UiUtil uiUtil) {
+    String imgPath = uiUtil.assetDir + "/Images/box.png";
+    var size = new Vector2(12.7f * uiUtil.sclmm, 13.48f * uiUtil.sclmm);
+    this.add(uiUtil.createUiImage(imgPath, size)).space(2 * uiUtil.sclmm);
   }
 
-  private void addLabel() {
+  private void addLabel(UiUtil uiUtil) {
     labelOfNumObjects = this.add("").getActor();
     LabelStyle style = new LabelStyle(labelOfNumObjects.getStyle());
-    style.font = UiUtil.createFont(" 0123456789/", 15 * UiUtil.sclpt, Color.WHITE);
+    style.font = uiUtil.createFont(" 0123456789/", 15 * uiUtil.sclpt, Color.WHITE);
     labelOfNumObjects.setStyle(style);
   }
 
