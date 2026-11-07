@@ -26,9 +26,9 @@ import net.seapanda.bunnyhop.utility.version.AppVersion;
 public class BhSimulatorInfo {
 
   /** BhSimulatorInfo の名前. */
-  private static final String NAME = "BhSimulatorImpl";
+  private static final String NAME = "BhSimulator";
   /** BhSimulatorInfo のバージョン. */
-  private static final AppVersion VERSION = AppVersion.of("bhsim-0.7.7");
+  private static final AppVersion VERSION = AppVersion.of("bhsim-0.7.8");
 
   /**
    * BhSimulatorInfo の名前を取得する.
